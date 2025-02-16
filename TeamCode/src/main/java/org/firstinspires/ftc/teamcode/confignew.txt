@@ -1,0 +1,71 @@
+Control Hub Motors
+Port 0 - (leftFront) need to reverse
+Port 1 - (rightFront)
+Port 2 - (leftBack) need to reverse
+Port 3 - (rightBack)
+
+Expansion Hub Motors
+Port 0 - rightHori positive goes out (full extension 865)
+Port 1 - leftHori positive goes in (full extension -865)
+Port 2 - vert0 positive up full 1165
+Port 3 - vert1 negative is up
+
+rightRotate
+leftRotate
+
+0 left back
+1 right back
+2 leftfront
+3 rightfront
+
+block0 = inner blocker (0.53 = block) (0.11 = open) (0.18min free)
+outerBlocker (0.55 = block) (0.15 = open) (0.22min free)
+up = transfer, away = tucked in, in = intake pos
+LH rotate (up 0.84) (in 0.28) (away 0.01)
+rh rotate (up 0.18) (in 0.73) (away 1.0)
+
+spin1 = left positive = outtake (leftIntake)
+spin 0 = right  positive = intake (rightIntake)
+
+servohub 6
+0 is sampleRelease
+1 claw 0 for open 0.23 close
+2 clawRotate drop off 0.32 intake = 1
+3 sampleRotate
+port 4 specDrop 1 is intake 0.76 is drop
+port 5 specRelease 0.05 is close 0.21 drop
+
+
+
+right front = left side odo
+left back = right side odo
+right back = back odo
+
+
+
+
+
+
+
+Control Hub Servos
+Port 0 - intakes (intake0)
+Port 1 - intake (intake1)
+Port 2 - right down (rightDown)
+Port 3 - left down (leftDown)
+Port 4 - blocker 0.16 is open and 0.5 is blocking (blocker)
+
+Expansion Hub Servos
+Port 0 - rotating arm (hookRotate)
+Port 1 - claw -0.28 is gripped 0 is open (claw)
+Port 2 - bucket 0 is in 0.42 is dropping (bucket)
+
+
+Adjust so axons default to last pos
+
+em1 = left slide negative makes it go out -2400 is limit
+em0 = right slide negative makes it come in 2400 is limit
+
+em3 with a negative input results in slide up
+em2 with a positive input results in slide down encoder connected 1170 is limit
+
+test

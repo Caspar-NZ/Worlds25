@@ -1,0 +1,34 @@
+Control Hub Motors
+Port 0 - left front backwards
+Port 1 - left back backwards
+Port 2 - right front
+Port 3 - right back
+
+Control Hub Servos
+Port 0 - intakes (intake0)
+Port 1 - intake (intake1)
+Port 2 - right down (rightDown)
+Port 3 - left down (leftDown)
+Port 4 - blocker 0.16 is open and 0.5 is blocking (blocker)
+
+Expansion Hub Motors
+Port 0 - leftHori
+Port 1 - rightHori
+Port 2 - vert0
+Port 3 - vert1
+
+Expansion Hub Servos
+Port 0 - rotating arm (hookRotate)
+Port 1 - claw -0.28 is gripped 0 is open (claw)
+Port 2 - bucket 0 is in 0.42 is dropping (bucket)
+
+
+Adjust so axons default to last pos
+
+em1 = left slide negative makes it go out -2400 is limit
+em0 = right slide negative makes it come in 2400 is limit
+
+em3 with a negative input results in slide up
+em2 with a positive input results in slide down encoder connected 1170 is limit
+
+test
