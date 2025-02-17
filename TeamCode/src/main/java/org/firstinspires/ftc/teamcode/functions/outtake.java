@@ -6,52 +6,46 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class outtake {
-    private Servo hookRotate, claw, bucket;
-
-    final private double rotateAtIntake = 0.83;
-    final private double rotateAtDelivery = 0.04;
+    private Servo clawRotate, claw, specDrop, specRelease;
+    final private double rotateAtIntake = 1.0;
+    final private double rotateAtDelivery = 0.32;
     final private double clawOpen = 0.0;
-    final private double clawClosed = 0.27;
-    final private double bucketAtIntake = 0.0;
-    final private double bucketAtDelivery = 0.3;
-    private final int bucketMoveSteps = 6; // Number of steps to complete the movement
-    private int bucketMoveCounter = 0; // Counter for tracking bucket movement steps
-    private double bucketIncrement; // Incremental change per step
+    final private double clawClosed = 0.23;
+    final private double specDropAtIntake = 1.0;
+    final private double specDropAtDelivery = 0.76;
+    final private double specReleaseBlocking = 0.05;
+    final private double specReleaseOpen = 0.21;
 
     public boolean isClawOpen;
     public boolean BucketPositionAtIntake;
-
+    public boolean clawAtIntake;
+    public boolean specDropOpen;
     private double setHookPos;
     private double setClawPos;
     private double setBucketPos;
+    private double setReleasePos;
 
     public outtake(HardwareMap hardwareMap){
-        hookRotate = hardwareMap.servo.get("hookRotate");
+        clawRotate = hardwareMap.servo.get("clawRotate");
         claw = hardwareMap.servo.get("claw");
-        bucket = hardwareMap.servo.get("bucket");
+        specDrop = hardwareMap.servo.get("specDrop");
+        specRelease = hardwareMap.servo.get("specRelease");
     }
-
     public void update(){
-        hookRotate.setPosition(setHookPos);
+        clawRotate.setPosition(setHookPos);
         claw.setPosition(setClawPos);
-
-        // Gradual bucket movement if counter is active
-        if (bucketMoveCounter > 0 && bucketMoveCounter <= bucketMoveSteps) {
-            setBucketPos += bucketIncrement;
-            bucketMoveCounter++;
-        }
-
-        bucket.setPosition(setBucketPos);
+        specDrop.setPosition(setBucketPos);
+        specRelease.setPosition(setReleasePos);
     }
-
-    public void hookAtIntake(Boolean intake69){
-        if (intake69){
+    public void hookAtIntake(Boolean intake){
+        if (intake){
             setHookPos = rotateAtIntake;
+            clawAtIntake = true;
         } else{
             setHookPos = rotateAtDelivery;
+            clawAtIntake = false;
         }
     }
-
     public void clawOpen(boolean open){
         if (open){
             isClawOpen = true;
@@ -61,16 +55,22 @@ public class outtake {
             setClawPos = clawClosed;
         }
     }
-
-    public void bucketAtIntakePos(Boolean intake){
+    public void specDropAtIntakePos(Boolean intake){
         if (intake){
             BucketPositionAtIntake = true;
-            setBucketPos = bucketAtIntake;
-            bucketMoveCounter = 0; // Reset movement counter if moving to intake
+            setBucketPos = specDropAtIntake;
         } else {
             BucketPositionAtIntake = false;
-            bucketIncrement = (bucketAtDelivery - setBucketPos) / bucketMoveSteps;
-            bucketMoveCounter = 1; // Start moving gradually to delivery position
+            setBucketPos = specDropAtDelivery;
+        }
+    }
+    public void specDropOpen(Boolean intake){
+        if (intake){
+            specDropOpen = true;
+            setReleasePos = specReleaseOpen;
+        } else {
+            specDropOpen = false;
+            setReleasePos = specReleaseBlocking;
         }
     }
 }

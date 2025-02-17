@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  * This class encapsulates control of:
  *   - Intake wheels (CRServos)
  *   - Inner and Outer blocker servos
- *   - Rotation servos (leftDown and rightDown), which share an inverse relationship.
+ *   - Rotation servos (leftRotate and rightRotate), which share an inverse relationship.
  *
  * Teleop code can change target values via setter functions (e.g. setSpeed(), setInnerBlock(), setRotation(), etc.)
  * and then call update() each loop to send the latest values to hardware.
@@ -21,7 +21,7 @@ public class intake {
     // --- Hardware Devices ---
     private CRServo leftIntake, rightIntake;
     private Servo innerBlock, outerBlock;
-    private Servo leftDown, rightDown;
+    private Servo leftRotate, rightRotate;
     private DigitalChannel pin0, pin1;  // For color detection
 
     // --- Constants: Inner & Outer Block positions ---
@@ -34,7 +34,7 @@ public class intake {
     private static final double OUTER_BLOCK_OPEN   = 0.15;
 
     // --- Constants: Rotation servo positions ---
-    // Presets for leftDown and rightDown (linked inversely)
+    // Presets for leftRotate and rightRotate (linked inversely)
     private static final double LEFT_DOWN_TRANSFER  = 0.84;
     private static final double RIGHT_DOWN_TRANSFER = 0.16;
 
@@ -51,8 +51,8 @@ public class intake {
     private double innerBlockTarget = INNER_BLOCK_CLOSED;
     private double outerBlockTarget = OUTER_BLOCK_CLOSED;
 
-    private double leftDownTarget = LEFT_DOWN_INTAKE;  // Default to INTAKE mode.
-    private double rightDownTarget = RIGHT_DOWN_INTAKE;
+    private double leftRotateTarget = LEFT_DOWN_INTAKE;  // Default to INTAKE mode.
+    private double rightRotateTarget = RIGHT_DOWN_INTAKE;
 
     // For rotation, store current mode so getters can return a friendly string.
     public enum RotationMode { TRANSFER, INTAKE, TUCKED }
@@ -67,8 +67,8 @@ public class intake {
         // Initialize servos for blockers and rotation.
         innerBlock = hardwareMap.get(Servo.class, "innerBlock");
         outerBlock = hardwareMap.get(Servo.class, "outerBlock");
-        leftDown   = hardwareMap.get(Servo.class, "leftDown");
-        rightDown  = hardwareMap.get(Servo.class, "rightDown");
+        leftRotate   = hardwareMap.get(Servo.class, "leftRotate");
+        rightRotate  = hardwareMap.get(Servo.class, "rightRotate");
 
         // Initialize digital channels for color detection.
         pin0 = hardwareMap.digitalChannel.get("digital0");
@@ -91,8 +91,8 @@ public class intake {
         outerBlock.setPosition(outerBlockTarget);
 
         // Set rotation servo positions.
-        leftDown.setPosition(leftDownTarget);
-        rightDown.setPosition(rightDownTarget);
+        leftRotate.setPosition(leftRotateTarget);
+        rightRotate.setPosition(rightRotateTarget);
     }
 
     // --- Getter Methods ---
@@ -154,7 +154,7 @@ public class intake {
      * Set the inner block state.
      * @param open true to open the inner block; false to close it.
      */
-    public void setInnerBlock(boolean open) {
+    public void setInnerBlockOpen(boolean open) {
         innerBlockTarget = open ? INNER_BLOCK_OPEN : INNER_BLOCK_CLOSED;
     }
 
@@ -162,28 +162,28 @@ public class intake {
      * Set the outer block state.
      * @param open true to open the outer block; false to close it.
      */
-    public void setOuterBlock(boolean open) {
+    public void setOuterBlockOpen(boolean open) {
         outerBlockTarget = open ? OUTER_BLOCK_OPEN : OUTER_BLOCK_CLOSED;
     }
 
     /**
      * Set the rotation mode for the intake.
-     * This updates the positions for the leftDown and rightDown servos as well as the current mode.
+     * This updates the positions for the leftRotate and rightRotate servos as well as the current mode.
      */
     public void setRotation(RotationMode mode) {
         currentRotation = mode;
         switch(mode) {
             case TRANSFER:
-                leftDownTarget  = LEFT_DOWN_TRANSFER;
-                rightDownTarget = RIGHT_DOWN_TRANSFER;
+                leftRotateTarget  = LEFT_DOWN_TRANSFER;
+                rightRotateTarget = RIGHT_DOWN_TRANSFER;
                 break;
             case INTAKE:
-                leftDownTarget  = LEFT_DOWN_INTAKE;
-                rightDownTarget = RIGHT_DOWN_INTAKE;
+                leftRotateTarget  = LEFT_DOWN_INTAKE;
+                rightRotateTarget = RIGHT_DOWN_INTAKE;
                 break;
             case TUCKED:
-                leftDownTarget  = LEFT_DOWN_TUCKED;
-                rightDownTarget = RIGHT_DOWN_TUCKED;
+                leftRotateTarget  = LEFT_DOWN_TUCKED;
+                rightRotateTarget = RIGHT_DOWN_TUCKED;
                 break;
         }
     }
