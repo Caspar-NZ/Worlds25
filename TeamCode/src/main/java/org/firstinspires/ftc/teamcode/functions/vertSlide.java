@@ -60,18 +60,32 @@ public class vertSlide {
         // Otherwise, if current reading is lower than MIN_POSITION, update it.
         if (slideMag.isPressed()) {
             MIN_POSITION = currentPosition;
-        } else if (currentPosition < MIN_POSITION) {
-            MIN_POSITION = currentPosition;
+        }
+        if ((targetPosition < currentPosition) && (targetPosition < MIN_POSITION) && (!slideMag.isPressed())) { //this means we're requesting to go down
+            MIN_POSITION -= 10;
+            targetPosition = MIN_POSITION + 1;
         }
 
-        if (targetPosition<MIN_POSITION){
-            powerReq =0;
+        MAX_POSITION = MIN_POSITION + 1170;
+
+        if (targetPosition > MAX_POSITION){
+            targetPosition = MAX_POSITION;
+        }
+
+        if (targetPosition < MIN_POSITION){
+            targetPosition = MIN_POSITION;
+        }
+
+        if ((Math.abs(currentPosition - targetPosition) < DEADZONE) || targetPosition <= MIN_POSITION) {
+            powerReq = 0;
             vert0.setPower(0);
             vert1.setPower(0);
             return;
         }
 
-        MAX_POSITION = MIN_POSITION + 1170;
+
+
+
 
         powerReq = pidController.calculate(currentPosition, targetPosition);
         powerReq = Math.max(-MAX_POWER, Math.min(powerReq, MAX_POWER));

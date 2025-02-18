@@ -49,10 +49,6 @@ public class horiSlides {
         pidController = new BasicPID(pidCoefficients);
     }
 
-    /**
-     * Sets the target position for the horizontal slides.
-     * No minimum clamp is applied here; the min clamp is calculated in update().
-     */
     public void setPosition(double position) {
         targetPosition = position;
     }
@@ -62,25 +58,35 @@ public class horiSlides {
         int currentPosRight = rightHori.getCurrentPosition();
         int averagePosition = (currentPosLeft + currentPosRight) / 2;
 
-        // If we're commanding a retraction (target below current average)
-        // and the target is below the stored MIN_POSITION...
-        if (targetPosition < averagePosition) {
-            // If either mag sensor is pressed, we latch the min position and stop further retraction.
-            if (leftMag.isPressed() || rightMag.isPressed()) {
-                MIN_POSITION = averagePosition;
-            } else if (targetPosition < MIN_POSITION && averagePosition < MIN_POSITION+10) {
-                MIN_POSITION -= 10;
-            }
+        if (leftMag.isPressed() || rightMag.isPressed()) {
+            MIN_POSITION = averagePosition;
         }
 
-        targetPosition = Math.max(MIN_POSITION, Math.min(targetPosition, MAX_POSITION));
+        if ((targetPosition < averagePosition) && (targetPosition < MIN_POSITION) && (!leftMag.isPressed() && !rightMag.isPressed())) { //this means we're requesting to go down
+            MIN_POSITION -= 10;
+            targetPosition = MIN_POSITION + 1;
+        }
 
-        if (Math.abs(averagePosition - targetPosition) < DEADZONE) {
+        MAX_POSITION = MIN_POSITION + 800;
+
+
+        if (targetPosition > MAX_POSITION){
+            targetPosition = MAX_POSITION;
+        }
+
+        if (targetPosition < MIN_POSITION){
+            targetPosition = MIN_POSITION;
+        }
+
+
+        if ((Math.abs(averagePosition - targetPosition) < DEADZONE) || targetPosition <= MIN_POSITION) {
             Power = 0;
             leftHori.setPower(0);
             rightHori.setPower(0);
             return;
         }
+
+
 
         // Calculate PID output.
         double powerLeft = pidController.calculate(currentPosLeft, targetPosition);

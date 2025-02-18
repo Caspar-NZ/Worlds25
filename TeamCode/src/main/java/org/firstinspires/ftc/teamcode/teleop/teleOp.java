@@ -148,35 +148,26 @@ public class teleOp extends LinearOpMode {
             rightBack.setPower(rightBackPower);
 
             // ------------------- Manual Horizontal Slide Control -------------------
-            // For horizontal slides, we want:
-            // - Pushing the right stick UP (which gives a negative value) to extend the slide (increase target)
-            // - Pulling the stick DOWN (positive value) to retract (decrease target)
             double currentHoriPos = horizontalSlides.getCurrentPosition();
 
             double horiInput = -currentGamepad2.right_stick_y;
             if (Math.abs(horiInput) > JOYSTICK_DEADZONE) {
                 horiSlidesTarget = currentHoriPos + (horiInput * MAX_INPUT_SCALING);
             } else {
-                // No input: hold the current position.
                 horiSlidesTarget = currentHoriPos;
             }
-            //horiSlidesTarget = Math.max(horizontalSlides.MIN_POSITION, Math.min(horiSlidesTarget, horizontalSlides.MAX_POSITION));
+
+
             horizontalSlides.setPosition(horiSlidesTarget);
 
             // ------------------- Manual Vertical Slide Control -------------------
-            // Retrieve current vertical slide position
             double currentVertPos = verticalSlides.getCurrentPosition();
-// Read the vertical stick value from Gamepad2
             double stickVal = currentGamepad2.left_stick_y;
-
-// If the stick is outside the deadzone, update the target position.
             if (Math.abs(stickVal) > JOYSTICK_DEADZONE) {
-                // Negative stick value (pushing up) should raise the slide.
                 vertSlidesTarget = currentVertPos + (-stickVal * MAX_INPUT_SCALING);
-                // Optionally, you could log that a new target was set.
             }
-// Otherwise, if the stick is within the deadzone, do not update the target.
-// This "latches" the previous target so the slide holds its position.
+
+
             verticalSlides.setPosition(vertSlidesTarget);
 
 
