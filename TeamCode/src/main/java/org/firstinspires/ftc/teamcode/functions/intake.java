@@ -227,4 +227,16 @@ public class intake {
         timedEndTimeMs = System.currentTimeMillis() + (long)(durationSec * 1000);
         timedIntakeActive = true;
     }
+
+    public void setTarget(int yellow, int red, int blue){
+
+    }
+
+    public boolean isTarget(){
+        if (getDetectedColor() == target1 || getDetectedColor() == target2) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
