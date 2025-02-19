@@ -14,7 +14,7 @@ public class outtake {
     final private double specDropAtIntake = 1.0;
     final private double specDropAtDelivery = 0.76;
     final private double specReleaseBlocking = 0.05;
-    final private double specReleaseOpen = 0.21;
+    final private double specReleaseOpen = 0.28;
 
     public boolean isClawOpen;
     public boolean BucketPositionAtIntake;

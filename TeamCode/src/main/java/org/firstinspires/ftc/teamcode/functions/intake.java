@@ -63,6 +63,7 @@ public class intake {
     private double timedLeftSpeed = 0;
     private double timedRightSpeed = 0;
     private long timedEndTimeMs = 0;
+    public String target1,target2;
 
     // --- Constructor ---
     public intake(HardwareMap hardwareMap) {
@@ -229,7 +230,23 @@ public class intake {
     }
 
     public void setTarget(int yellow, int red, int blue){
-
+        if (yellow+red+blue > 1){
+            target1 = "Yellow";
+            if (red>0){
+                target2 = "Red";
+            } else {
+                target2 = "Blue";
+            }
+        } else {
+            target2="null";
+            if (yellow > 0) {
+                target1 = "Yellow";
+            } else if (red > 0){
+                target1 = "Red";
+            } else {
+                target1 = "Blue";
+            }
+        }
     }
 
     public boolean isTarget(){
