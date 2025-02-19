@@ -58,6 +58,12 @@ public class intake {
     public enum RotationMode { TRANSFER, INTAKE, TUCKED }
     private RotationMode currentRotation = RotationMode.INTAKE;
 
+    // --- Timed Intake Command State ---
+    private boolean timedIntakeActive = false;
+    private double timedLeftSpeed = 0;
+    private double timedRightSpeed = 0;
+    private long timedEndTimeMs = 0;
+
     // --- Constructor ---
     public intake(HardwareMap hardwareMap) {
         // Initialize CR servos for intake wheels.
@@ -82,9 +88,22 @@ public class intake {
      * This should be called as frequently as possible in your teleop loop.
      */
     public void update() {
+        // If a timed command is active, override the intake speeds accordingly.
+        if (timedIntakeActive) {
+            if (System.currentTimeMillis() <= timedEndTimeMs) {
+                leftIntakePower = timedLeftSpeed;
+                rightIntakePower = timedRightSpeed;
+            } else {
+                // Timed command expired; stop the intake and clear the flag.
+                leftIntakePower = 0;
+                rightIntakePower = 0;
+                timedIntakeActive = false;
+            }
+        }
+
         // Set intake wheel speeds.
         leftIntake.setPower(leftIntakePower);
-        rightIntake.setPower(rightIntakePower);
+        rightIntake.setPower(-rightIntakePower);
 
         // Set blocker positions.
         innerBlock.setPosition(innerBlockTarget);
@@ -111,18 +130,21 @@ public class intake {
     }
 
     /**
-     * Returns the current inner block state as a String ("open" or "closed").
+     * Returns whether the inner block is open.
+     * @return true if inner block is open, false otherwise.
      */
-    public String getInnerBlockState() {
-        return (innerBlockTarget == INNER_BLOCK_OPEN) ? "open" : "closed";
+    public boolean isInnerOpen() {
+        return innerBlockTarget == INNER_BLOCK_OPEN;
     }
 
     /**
-     * Returns the current outer block state as a String ("open" or "closed").
+     * Returns whether the outer block is open.
+     * @return true if outer block is open, false otherwise.
      */
-    public String getOuterBlockState() {
-        return (outerBlockTarget == OUTER_BLOCK_OPEN) ? "open" : "closed";
+    public boolean isOuterOpen() {
+        return outerBlockTarget == OUTER_BLOCK_OPEN;
     }
+
 
     /**
      * Returns the current rotation mode as a String.
@@ -146,6 +168,7 @@ public class intake {
      * Use positive values for standard intake (e.g. 1,1) and negative for reverse (-1,-1).
      */
     public void setSpeed(double leftSpeed, double rightSpeed) {
+        // This will be overridden if a timed command is active in update()
         leftIntakePower  = leftSpeed;
         rightIntakePower = rightSpeed;
     }
@@ -188,27 +211,19 @@ public class intake {
         }
     }
 
-    // --- Additional Helper Methods (optional) ---
-
     /**
-     * Toggle the inner block state.
+     * Set the intake speeds for a specific duration.
+     * The speeds will remain active until durationSec has elapsed,
+     * after which they will be automatically set back to 0 in update().
+     *
+     * @param leftSpeed Speed for the left intake wheel.
+     * @param rightSpeed Speed for the right intake wheel.
+     * @param durationSec Duration in seconds to run the intake.
      */
-    public void toggleInnerBlock() {
-        if(innerBlockTarget == INNER_BLOCK_CLOSED) {
-            innerBlockTarget = INNER_BLOCK_OPEN;
-        } else {
-            innerBlockTarget = INNER_BLOCK_CLOSED;
-        }
-    }
-
-    /**
-     * Toggle the outer block state.
-     */
-    public void toggleOuterBlock() {
-        if(outerBlockTarget == OUTER_BLOCK_CLOSED) {
-            outerBlockTarget = OUTER_BLOCK_OPEN;
-        } else {
-            outerBlockTarget = OUTER_BLOCK_CLOSED;
-        }
+    public void setTimedIntake(double leftSpeed, double rightSpeed, double durationSec) {
+        timedLeftSpeed = leftSpeed;
+        timedRightSpeed = rightSpeed;
+        timedEndTimeMs = System.currentTimeMillis() + (long)(durationSec * 1000);
+        timedIntakeActive = true;
     }
 }

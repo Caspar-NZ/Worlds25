@@ -10,6 +10,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import java.util.List;
+import java.util.Objects;
+
 import org.firstinspires.ftc.teamcode.functions.horiSlides;
 import org.firstinspires.ftc.teamcode.functions.outtake;
 import org.firstinspires.ftc.teamcode.functions.intake;
@@ -41,6 +43,11 @@ public class teleOp extends LinearOpMode {
     double loopTime = 0;
     public String target = "";
     int i = 0;
+
+    private double presenceEndTime = 0.0; // When we last saw a piece exit
+    private boolean wasPresent = false;   // Tracks if we had presence in the previous loop
+    private boolean rejecting = false;    // True if we’re currently rejecting a non-yellow piece
+    private double rejectSpeed = 0.0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -148,6 +155,85 @@ public class teleOp extends LinearOpMode {
             rightBack.setPower(rightBackPower);
 
             // ------------------- Manual Horizontal Slide Control -------------------
+            if (currentGamepad2.right_bumper && !previousGamepad2.right_bumper){ //rotate intake
+                if (intake.getRotationMode().equalsIgnoreCase("TUCKED")){
+                    intake.setRotation(INTAKE);
+                    intake.setTimedIntake(-1,-1,0.4);
+                }
+                if (intake.getRotationMode().equalsIgnoreCase("INTAKE")){
+                    if (!Objects.equals(intake.getDetectedColor(), "NA")){
+                        intake.setRotation(TRANSFER);
+                    } else {
+                        intake.setRotation(TUCKED);
+                    }
+                }
+                if (intake.getRotationMode().equalsIgnoreCase("TRANSFER")){
+                    if (!Objects.equals(intake.getDetectedColor(), "NA")){
+                        intake.setRotation(INTAKE);
+                    } else {
+                        intake.setRotation(TUCKED);
+                    }
+                }
+            }
+
+            if (intake.getRotationMode().equalsIgnoreCase("INTAKE")){
+                if (!Objects.equals(intake.getDetectedColor(), "NA")){
+                    if ("target game piece colour"){
+
+                    } else if (intake.isInnerOpen()){
+                        rejectSpeed = -1.0;
+                        rejecting = true;
+                    }
+
+                    } else {
+                        rejectSpeed = 1.0;
+                        rejecting = true;
+                    }
+                    wasPresent = true;
+                } else {
+                    // No presence
+                    // If we just transitioned from presence to no presence, record the time
+                    if (wasPresent) {
+                        presenceEndTime = getRuntime();
+                        wasPresent = false;
+                    }
+
+                    // If we were rejecting, keep the blocker open until 0.2s after the piece left
+                    if (rejecting) {
+                        if ((getRuntime() - presenceEndTime) >= 0.2) {
+                            // Enough time has passed => close blocker, stop rejecting
+                            intake.setOuterBlockOpen(true);
+                            intake.setInnerBlockOpen(true);
+                            innerBlocker.setPosition(BLOCK_POS);
+                            rejecting = false;
+                        } else {
+                            // Keep the blocker open while waiting
+                            innerBlocker.setPosition(OPEN_POS);
+                        }
+                    }
+
+                    // If not rejecting, respond to the trigger input
+                    if (!rejecting) {
+                        if (currentGamepad2.right_trigger > 0.1){
+                            intake.setInnerBlockOpen(false);
+                            intake.setOuterBlockOpen(true);
+                            intake.setSpeed(currentGamepad2.right_trigger,currentGamepad2.right_trigger);
+                        } else if (currentGamepad2.left_trigger > 0.1){
+                            intake.setInnerBlockOpen(true);
+                            intake.setOuterBlockOpen(false);
+                            intake.setSpeed(-currentGamepad2.left_trigger,-currentGamepad2.left_trigger);
+                        }
+                    } else {
+                        // If we are still in the "waiting to close" window, keep rejecting at full power
+                        leftPower = 1;
+                        rightPower = -1;
+                    }
+
+
+
+            }
+
+
             double currentHoriPos = horizontalSlides.getCurrentPosition();
 
             double horiInput = -currentGamepad2.right_stick_y;
@@ -159,6 +245,11 @@ public class teleOp extends LinearOpMode {
 
 
             horizontalSlides.setPosition(horiSlidesTarget);
+
+
+
+
+
 
             // ------------------- Manual Vertical Slide Control -------------------
             double currentVertPos = verticalSlides.getCurrentPosition();
@@ -174,8 +265,8 @@ public class teleOp extends LinearOpMode {
             // ------------------- Subsystem Updates -------------------
             horizontalSlides.update();
             verticalSlides.update();
-            // intake.update();   // Uncomment if intake control is desired
-            // outtake.update();  // Uncomment if outtake control is desired
+            intake.update();
+            outtake.update();
 
             // ------------------- Telemetry -------------------
             telemetry.addData("Vert power", verticalSlides.currentPower());
