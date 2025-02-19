@@ -48,6 +48,11 @@ public class teleOp extends LinearOpMode {
     private boolean wasPresent = false;   // Tracks if we had presence in the previous loop
     private boolean rejecting = false;    // True if we’re currently rejecting a non-yellow piece
     private double rejectSpeed = 0.0;
+    private boolean firstLoop = false;
+    private boolean trigger1 = false;
+    private String lastClosed = "";
+    private boolean goingHome = false;
+    private double rotationStartTime = 0.0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -176,18 +181,20 @@ public class teleOp extends LinearOpMode {
                 }
             }
 
-            if (intake.getRotationMode().equalsIgnoreCase("INTAKE")){
-                if (!Objects.equals(intake.getDetectedColor(), "NA")){
-                    if ("target game piece colour"){
-
-                    } else if (intake.isInnerOpen()){
+            if (intake.getRotationMode().equalsIgnoreCase("INTAKE") && !goingHome) {
+                if (!Objects.equals(intake.getDetectedColor(), "NA")) {
+                    if ("target game piece colour") {
+                        goingHome = true;
+                        firstLoop = true;
+                        trigger1 = true;
+                    } else if (intake.isInnerOpen()) {
                         rejectSpeed = -1.0;
                         rejecting = true;
-                    }
-
+                        lastClosed = "OUTER";
                     } else {
                         rejectSpeed = 1.0;
                         rejecting = true;
+                        lastClosed = "INNER";
                     }
                     wasPresent = true;
                 } else {
@@ -197,42 +204,67 @@ public class teleOp extends LinearOpMode {
                         presenceEndTime = getRuntime();
                         wasPresent = false;
                     }
-
                     // If we were rejecting, keep the blocker open until 0.2s after the piece left
                     if (rejecting) {
                         if ((getRuntime() - presenceEndTime) >= 0.2) {
                             // Enough time has passed => close blocker, stop rejecting
-                            intake.setOuterBlockOpen(true);
-                            intake.setInnerBlockOpen(true);
-                            innerBlocker.setPosition(BLOCK_POS);
+                            if (lastClosed.equals("OUTER")) {
+                                intake.setOuterBlockOpen(false);
+                            } else {
+                                intake.setInnerBlockOpen(false);
+                            }
                             rejecting = false;
                         } else {
                             // Keep the blocker open while waiting
-                            innerBlocker.setPosition(OPEN_POS);
+                            intake.setOuterBlockOpen(true);
+                            intake.setInnerBlockOpen(true);
                         }
                     }
 
                     // If not rejecting, respond to the trigger input
                     if (!rejecting) {
-                        if (currentGamepad2.right_trigger > 0.1){
+                        if (currentGamepad2.right_trigger > 0.1) {
                             intake.setInnerBlockOpen(false);
                             intake.setOuterBlockOpen(true);
-                            intake.setSpeed(currentGamepad2.right_trigger,currentGamepad2.right_trigger);
-                        } else if (currentGamepad2.left_trigger > 0.1){
+                            intake.setSpeed(currentGamepad2.right_trigger, currentGamepad2.right_trigger);
+                        } else if (currentGamepad2.left_trigger > 0.1) {
                             intake.setInnerBlockOpen(true);
                             intake.setOuterBlockOpen(false);
-                            intake.setSpeed(-currentGamepad2.left_trigger,-currentGamepad2.left_trigger);
+                            intake.setSpeed(-currentGamepad2.left_trigger, -currentGamepad2.left_trigger);
                         }
                     } else {
                         // If we are still in the "waiting to close" window, keep rejecting at full power
-                        leftPower = 1;
-                        rightPower = -1;
+                        intake.setSpeed(rejectSpeed, rejectSpeed);
                     }
-
-
-
+                }
             }
 
+            if (goingHome){
+                wasPresent = false;
+                outtake.specDropAtIntakePos(true);
+                if (horizontalSlides.getCurrentPosition()>200 && firstLoop){
+                    horiSlidesTarget = 200;
+                    firstLoop = false;
+                }
+                //horiSlidesTarget = 0;
+                if (horizontalSlides.getCurrentPosition()<500 && trigger1){
+                    intake.setOuterBlockOpen(true);
+                    intake.setInnerBlockOpen(true);
+                    intake.setRotation(TRANSFER);
+                    rotationStartTime = getRuntime();
+                    trigger1 = false;
+                }
+                if (intake.getRotationMode().equalsIgnoreCase("TRANSFER") && horiSlidesTarget != 0){
+                    if ((horizontalSlides.getCurrentPosition()>200) || (getRuntime() > rotationStartTime +400)){
+                        horiSlidesTarget = 0;
+                    }
+                }
+                if (horizontalSlides.getCurrentPosition()<15){
+                    intake.setTimedIntake(-1,-1,0.8);
+                    goingHome = false;
+                }
+
+            }
 
             double currentHoriPos = horizontalSlides.getCurrentPosition();
 
