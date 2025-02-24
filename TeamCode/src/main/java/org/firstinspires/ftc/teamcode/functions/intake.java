@@ -238,13 +238,15 @@ public class intake {
                 target2 = "Blue";
             }
         } else {
-            target2="null";
             if (yellow > 0) {
                 target1 = "Yellow";
+                target2="null";
             } else if (red > 0){
-                target1 = "Red";
+                target1="null";
+                target2 = "Red";
             } else {
-                target1 = "Blue";
+                target1="null";
+                target2 = "Blue";
             }
         }
     }

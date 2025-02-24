@@ -24,6 +24,9 @@ public class outtake {
     private double setClawPos;
     private double setBucketPos;
     private double setReleasePos;
+    public boolean dumpingYellows = true;
+    public boolean scoringSamples = false;
+    public boolean scoringSpecs = true;
 
     public outtake(HardwareMap hardwareMap){
         clawRotate = hardwareMap.servo.get("clawRotate");
