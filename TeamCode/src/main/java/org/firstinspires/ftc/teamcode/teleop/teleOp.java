@@ -367,7 +367,7 @@ public class teleOp extends LinearOpMode {
                     horiSlidesTarget = horizontalSlides.MIN_POSITION + 0.1;
                 }
 
-                if (slidePos<(horizontalSlides.MIN_POSITION +400)){
+                if (slidePos<(horizontalSlides.MIN_POSITION +700)){
                     intake.setRotation(TRANSFER);
                     intake.setInnerBlockOpen(true);
                     intake.setOuterBlockOpen(true);
@@ -394,8 +394,8 @@ public class teleOp extends LinearOpMode {
                 double horiInput = -currentGamepad2.right_stick_y;
 
                 if (Math.abs(horiInput) > JOYSTICK_DEADZONE) {
-                    if (Math.abs(horiInput) < 0.6){
-                        horiInput = horiInput/2;
+                    if (Math.abs(horiInput) < 0.8){
+                        horiInput = horiInput/3;
                     }
                     if (intake.getRotationMode().equalsIgnoreCase("INTAKE")) {
                         horiSlidesTarget = currentHoriPos + (horiInput * MAX_INPUT_SCALING);
