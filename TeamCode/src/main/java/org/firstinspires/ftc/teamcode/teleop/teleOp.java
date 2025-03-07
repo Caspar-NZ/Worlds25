@@ -75,6 +75,9 @@ public class teleOp extends LinearOpMode {
 
     private int i = 0;
 
+    boolean previousWasTarget = false;
+    boolean currentIsTarget = false;
+    boolean doubleDoubleTarget = false;
 
 
 
@@ -113,15 +116,13 @@ public class teleOp extends LinearOpMode {
         intake.setOuterBlockOpen(true);
         // Maintain target values continuously.
         intake.setTarget(1, 0, 0);
-        intake.update();
 
         outtake.hookAtIntake(true);
         outtake.clawOpen(true);
         outtake.specDropAtIntakePos(true);
         outtake.specDropOpen(false);
-        outtake.update();
 
-        intake.setTarget(1, 1, 0);
+        intake.setTarget(0, 1, 0);
         Alliance = "Red";
 
         while (!isStarted() && !isStopRequested()) {
@@ -151,6 +152,7 @@ public class teleOp extends LinearOpMode {
                 gamepad1.setLedColor(0,0,255, LED_DURATION_CONTINUOUS);
                 gamepad2.setLedColor(0,0,255, LED_DURATION_CONTINUOUS);
             }
+            previousStartTime = getRuntime();
         }
 
         while (opModeIsActive()) {
@@ -176,6 +178,19 @@ public class teleOp extends LinearOpMode {
             previousGamepad2.copy(currentGamepad2);
             currentGamepad1.copy(gamepad1);
             currentGamepad2.copy(gamepad2);
+
+            previousIntake = thisIntake;
+            thisIntake = intake.getDetectedColor();
+
+
+            previousWasTarget = currentIsTarget;
+            currentIsTarget = intake.isTarget();
+
+            if (previousWasTarget && currentIsTarget){
+                doubleDoubleTarget = true;
+            } else {
+                doubleDoubleTarget = false;
+            }
 
             // setting target
             if ((currentGamepad1.left_stick_button && !previousGamepad1.left_stick_button) || (currentGamepad2.left_stick_button && !previousGamepad2.left_stick_button)){
@@ -244,6 +259,9 @@ public class teleOp extends LinearOpMode {
             double y  = -currentGamepad1.left_stick_y;
             double x  = currentGamepad1.left_stick_x * 1.1;
             double rx = currentGamepad1.right_stick_x;
+            if (Math.abs(rx)<0.8){
+                rx= rx*0.7;
+            }
             double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
             double leftFrontPower  = (y + x + rx) / denominator;
             double leftBackPower   = (y - x + rx) / denominator;
@@ -256,7 +274,7 @@ public class teleOp extends LinearOpMode {
 
             // ------------------- RIGHT BUMPER TO TOGGLE INTAKE DEPLOYMENT -------------------
             if (currentGamepad2.right_bumper && !previousGamepad2.right_bumper) {
-                if (horizontalSlides.getCurrentPosition()> horizontalSlides.MIN_POSITION +120) {
+                if (horizontalSlides.getCurrentPosition()> horizontalSlides.MIN_POSITION +60) {
 
                     if (intake.getRotationMode().equalsIgnoreCase("TUCKED")) {
                         intake.setRotation(INTAKE);
@@ -286,7 +304,7 @@ public class teleOp extends LinearOpMode {
                         }
                     }
                 } else {
-                    horiSlidesTarget = horizontalSlides.MIN_POSITION + 120;
+                    horiSlidesTarget = horizontalSlides.MIN_POSITION + 60;
                 }
 
             }
@@ -294,7 +312,7 @@ public class teleOp extends LinearOpMode {
             // ------------------- MAIN INTAKE LOGIC (when not in goHome sequence) -------------------
             if (!readyToTakeADump && !goingHome && intake.getRotationMode().equalsIgnoreCase("INTAKE")) {
                 if (!Objects.equals(intake.getDetectedColor(), "NA")) {
-                    if (intake.isTarget()) {
+                    if (doubleDoubleTarget) {
                         // TARGET PIECE: Stop intake immediately and start goHome sequence.
                         intake.setSpeed(0, 0);
                         goingHome = true;
@@ -345,8 +363,7 @@ public class teleOp extends LinearOpMode {
                 }
             }
 
-            previousIntake = thisIntake;
-            thisIntake = intake.getDetectedColor();
+
 
             if (goingHome && thisIntake.equals("NA") && previousIntake.equals("NA")){
                 goingHome = false;
@@ -395,7 +412,7 @@ public class teleOp extends LinearOpMode {
 
                 if (Math.abs(horiInput) > JOYSTICK_DEADZONE) {
                     if (Math.abs(horiInput) < 0.8){
-                        horiInput = horiInput/3;
+                        horiInput = horiInput*0.18;
                     }
                     if (intake.getRotationMode().equalsIgnoreCase("INTAKE")) {
                         horiSlidesTarget = currentHoriPos + (horiInput * MAX_INPUT_SCALING);
@@ -485,10 +502,10 @@ public class teleOp extends LinearOpMode {
                 double stickVal;
                 if (Math.abs(leftTrigger) >= Math.abs(rightTrigger) && Math.abs(leftTrigger) >= Math.abs(leftStick)) {
                     // If left trigger is highest, invert its value
-                    stickVal = -leftTrigger/3;
+                    stickVal = -leftTrigger*0.2;
                 } else if (Math.abs(rightTrigger) >= Math.abs(leftTrigger) && Math.abs(rightTrigger) >= Math.abs(leftStick)) {
                     // If right trigger is highest, use it as is
-                    stickVal = rightTrigger/6;
+                    stickVal = rightTrigger*0.08;
                 } else {
                     // Otherwise, use the left stick value
                     if (Math.abs(leftStick) < 0.6){

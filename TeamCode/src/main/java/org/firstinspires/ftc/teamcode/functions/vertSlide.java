@@ -13,7 +13,7 @@ public class vertSlide {
     // Encoder limits: MIN_POSITION updates dynamically based on the mag sensor "vertMag"
     public static double MIN_POSITION = 0;
     public static double MAX_POSITION = MIN_POSITION + 1170;
-    private static final double DEADZONE = 2;         // Encoder counts deadzone
+    private static final double DEADZONE = 0;         // Encoder counts deadzone
     private static final double MAX_POWER = 1.0;        // Maximum motor power
     private static final double MAX_CURRENT = 3.0;      // Current limit in amps
 
