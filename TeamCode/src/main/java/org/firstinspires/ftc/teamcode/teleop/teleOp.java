@@ -78,6 +78,7 @@ public class teleOp extends LinearOpMode {
     boolean previousWasTarget = false;
     boolean currentIsTarget = false;
     boolean doubleDoubleTarget = false;
+    boolean doubleDouble = false;
 
 
 
@@ -182,6 +183,11 @@ public class teleOp extends LinearOpMode {
             previousIntake = thisIntake;
             thisIntake = intake.getDetectedColor();
 
+            if (previousIntake == thisIntake){
+                doubleDouble = true;
+            } else {
+                doubleDouble = false;
+            }
 
             previousWasTarget = currentIsTarget;
             currentIsTarget = intake.isTarget();
@@ -317,7 +323,7 @@ public class teleOp extends LinearOpMode {
                         intake.setSpeed(0, 0);
                         goingHome = true;
                         goHomeWaitStart = currentTime;
-                    } else {
+                    } else if (doubleDouble){
                         // NON-TARGET: Reject it.
                         // Force both blockers open so the piece passes through.
                         intake.setInnerBlockOpen(true);
@@ -351,11 +357,27 @@ public class teleOp extends LinearOpMode {
                         if (currentGamepad2.right_trigger > 0.1) {
                             intake.setInnerBlockOpen(false);
                             intake.setOuterBlockOpen(true);
-                            intake.setSpeed(currentGamepad2.right_trigger, currentGamepad2.right_trigger);
+                            double intakeSpeed = currentGamepad2.right_trigger *2;
+                            if (intakeSpeed >= 1.0){
+                                intakeSpeed = 1.0;
+                            }
+                            intake.setSpeed(intakeSpeed, intakeSpeed);
                         } else if (currentGamepad2.left_trigger > 0.1) {
                             intake.setInnerBlockOpen(true);
                             intake.setOuterBlockOpen(false);
-                            intake.setSpeed(-currentGamepad2.left_trigger, -currentGamepad2.left_trigger);
+                            double intakeSpeed = currentGamepad2.left_trigger *2;
+                            if (intakeSpeed >= 1.0){
+                                intakeSpeed = 1.0;
+                            }
+                            intake.setSpeed(-intakeSpeed, -intakeSpeed);
+                        } else if (currentGamepad2.dpad_right){
+                            intake.setInnerBlockOpen(true);
+                            intake.setOuterBlockOpen(true);
+                            intake.setSpeed(1, -1);
+                        } else if (currentGamepad2.dpad_left){
+                            intake.setInnerBlockOpen(true);
+                            intake.setOuterBlockOpen(true);
+                            intake.setSpeed(-1, 1);
                         } else {
                             intake.setSpeed(0, 0);
                         }
@@ -412,11 +434,11 @@ public class teleOp extends LinearOpMode {
 
                 if (Math.abs(horiInput) > JOYSTICK_DEADZONE) {
                     if (Math.abs(horiInput) < 0.8){
-                        horiInput = horiInput*0.18;
+                        horiInput = horiInput*0.10;
                     }
                     if (intake.getRotationMode().equalsIgnoreCase("INTAKE")) {
                         horiSlidesTarget = currentHoriPos + (horiInput * MAX_INPUT_SCALING);
-                        horiSlidesTarget = Math.max(horiSlidesTarget, horizontalSlides.MIN_POSITION + 120);
+                        horiSlidesTarget = Math.max(horiSlidesTarget, horizontalSlides.MIN_POSITION + 80);
                     } else {
                         horiSlidesTarget = currentHoriPos + (horiInput * MAX_INPUT_SCALING);
                     }
