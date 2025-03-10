@@ -408,7 +408,7 @@ public class teleOp extends LinearOpMode {
 
                 if (slidePos<(horizontalSlides.MIN_POSITION +700)){
                     intake.setRotation(TRANSFER);
-                    intake.setInnerBlockOpen(true);
+                    //intake.setInnerBlockOpen(true);
                     intake.setOuterBlockOpen(true);
                 }
                 if (slidePos < (horizontalSlides.MIN_POSITION + 200) && currentTime - goHomeWaitStart >= 0.4){

@@ -11,9 +11,9 @@ public class FConstants {
         FollowerConstants.localizers = Localizers.THREE_WHEEL;
 
         FollowerConstants.leftFrontMotorName = "leftFront";
-        FollowerConstants.leftRearMotorName = "leftBack";
+        FollowerConstants.leftRearMotorName = "leftRear";
         FollowerConstants.rightFrontMotorName = "rightFront";
-        FollowerConstants.rightRearMotorName = "rightBack";
+        FollowerConstants.rightRearMotorName = "rightRear";
 
         FollowerConstants.leftFrontMotorDirection = DcMotorSimple.Direction.REVERSE;
         FollowerConstants.leftRearMotorDirection = DcMotorSimple.Direction.REVERSE;
@@ -36,11 +36,11 @@ public class FConstants {
         FollowerConstants.useSecondaryHeadingPID = false;
         FollowerConstants.secondaryHeadingPIDFCoefficients.setCoefficients(2,0,0.1,0); // Not being used, @see useSecondaryHeadingPID
 
-        FollowerConstants.drivePIDFCoefficients.setCoefficients(0.023,0.0015,0.0002,0.44,0);
+        FollowerConstants.drivePIDFCoefficients.setCoefficients(0.025,0.0015,0.0002,0.4,0);
         FollowerConstants.useSecondaryDrivePID = false;
         FollowerConstants.secondaryDrivePIDFCoefficients.setCoefficients(0.1,0,0,0.6,0); // Not being used, @see useSecondaryDrivePID
 
-        FollowerConstants.zeroPowerAccelerationMultiplier = 5;
+        FollowerConstants.zeroPowerAccelerationMultiplier = 4;
         FollowerConstants.centripetalScaling = 0.0005;
 
         FollowerConstants.pathEndTimeoutConstraint = 500;

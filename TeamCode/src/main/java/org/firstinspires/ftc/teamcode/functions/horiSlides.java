@@ -11,7 +11,7 @@ public class horiSlides {
 
     // The slide range is 865 counts.
     public static int MIN_POSITION = 0;
-    public static int MAX_POSITION = MIN_POSITION + 865;
+    public static int MAX_POSITION = MIN_POSITION + 890;//865
     private static final double DEADZONE = 5;
     private static final double MAX_POWER = 1;
 
