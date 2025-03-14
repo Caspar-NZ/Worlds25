@@ -339,7 +339,7 @@ public class teleOp extends LinearOpMode {
                     // No piece detected.
                     if (rejecting) {
                         // Wait 0.2 sec after the piece disappears before restoring manual control.
-                        if (currentTime - rejectionEndTime >= 0.2) {
+                        if (currentTime - rejectionEndTime >= 0.05) {
                             if (currentGamepad2.right_trigger > 0.1) {
                                 intake.setInnerBlockOpen(false);
                                 intake.setOuterBlockOpen(true);
@@ -348,7 +348,7 @@ public class teleOp extends LinearOpMode {
                                 intake.setOuterBlockOpen(false);
                             }
                             rejecting = false;
-                            intake.setSpeed(0, 0);
+                            //intake.setSpeed(0, 0);
                         } else {
                             double rejectionSpeed = (currentGamepad2.right_trigger > currentGamepad2.left_trigger) ? 1.0 : -1.0;
                             intake.setSpeed(rejectionSpeed, rejectionSpeed);
