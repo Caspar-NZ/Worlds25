@@ -135,10 +135,10 @@ public class teleOp extends LinearOpMode {
 
             if ((currentGamepad2.touchpad && !previousGamepad2.touchpad) || (currentGamepad1.touchpad && !previousGamepad1.touchpad)){
                 if (intake.target2.equals("Red")){
-                    intake.setTarget(1, 0, 1);
+                    intake.setTarget(0, 0, 1);
                     Alliance = "Blue";
                 } else {
-                    intake.setTarget(1, 1, 0);
+                    intake.setTarget(0, 1, 0);
                     Alliance = "Red";
                 }
             }
@@ -317,12 +317,13 @@ public class teleOp extends LinearOpMode {
 
             // ------------------- MAIN INTAKE LOGIC (when not in goHome sequence) -------------------
             if (!readyToTakeADump && !goingHome && intake.getRotationMode().equalsIgnoreCase("INTAKE")) {
-                if (!Objects.equals(intake.getDetectedColor(), "NA")) {
+                if (!Objects.equals(intake.getDetectedColor(), "NA") && !Objects.equals(intake.getDetectedColor(), "MixedState")) {
                     if (doubleDoubleTarget) {
                         // TARGET PIECE: Stop intake immediately and start goHome sequence.
                         intake.setSpeed(0, 0);
                         goingHome = true;
                         goHomeWaitStart = currentTime;
+                        rejecting = false;
                     } else if (doubleDouble){
                         // NON-TARGET: Reject it.
                         // Force both blockers open so the piece passes through.
@@ -637,6 +638,13 @@ public class teleOp extends LinearOpMode {
             outtake.update();
 
             // ------------------- TELEMETRY -------------------
+            telemetry.addData("Pin0", intake.pin0.getState());
+            telemetry.addData("Pin1", intake.pin1.getState());
+            telemetry.addData("ePin2", intake.epin0.getState());
+            telemetry.addData("ePin3", intake.epin1.getState());
+            telemetry.addData("Sensor1", intake.Sensor1);
+            telemetry.addData("Sensor2", intake.Sensor2);
+            telemetry.addData("IntakeColour", intake.getDetectedColor());
             telemetry.addData("Slide Pos", horizontalSlides.getCurrentPosition());
             telemetry.addData("Slide Target", horiSlidesTarget);
             telemetry.addData("Intake Rotation", intake.getRotationMode());

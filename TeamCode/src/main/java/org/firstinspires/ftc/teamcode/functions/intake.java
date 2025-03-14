@@ -22,7 +22,7 @@ public class intake {
     private CRServo leftIntake, rightIntake;
     private Servo innerBlock, outerBlock;
     private Servo leftRotate, rightRotate;
-    private DigitalChannel pin0, pin1;  // For color detection
+    public DigitalChannel pin0, pin1, epin0, epin1;  // For color detection
 
     // --- Constants: Inner & Outer Block positions ---
     // For innerBlock: 0.53 = closed (block), 0.11 = open.
@@ -64,6 +64,7 @@ public class intake {
     private double timedRightSpeed = 0;
     private long timedEndTimeMs = 0;
     public String target1,target2;
+    public String Sensor1, Sensor2;
 
     // --- Constructor ---
     public intake(HardwareMap hardwareMap) {
@@ -80,8 +81,12 @@ public class intake {
         // Initialize digital channels for color detection.
         pin0 = hardwareMap.digitalChannel.get("digital0");
         pin1 = hardwareMap.digitalChannel.get("digital1");
+        epin0 = hardwareMap.digitalChannel.get("edigital0");
+        epin1 = hardwareMap.digitalChannel.get("edigital1");
         pin0.setMode(DigitalChannel.Mode.INPUT);
         pin1.setMode(DigitalChannel.Mode.INPUT);
+        epin0.setMode(DigitalChannel.Mode.INPUT);
+        epin1.setMode(DigitalChannel.Mode.INPUT);
     }
 
     /**
@@ -124,10 +129,41 @@ public class intake {
     public String getDetectedColor() {
         boolean state0 = pin0.getState();
         boolean state1 = pin1.getState();
-        if (state0 && state1)      return "Yellow";
-        else if (state0 && !state1) return "Blue";
-        else if (!state0 && state1) return "Red";
-        else                      return "NA";
+        boolean estate0 = epin0.getState();
+        boolean estate1 = epin1.getState();
+        if (state0 && state1) {
+            Sensor1 = "Yellow";
+        } else if (state0 && !state1) {
+            Sensor1 = "Blue";
+        } else if (!state0 && state1) {
+            Sensor1 = "Red";
+        } else {
+            Sensor1 = "NA";
+        }
+
+        if (estate0 && estate1) {
+            Sensor2 = "Yellow";
+        } else if (estate0 && !estate1) {
+            Sensor2 = "Blue";
+        } else if (!estate0 && estate1) {
+            Sensor2 = "Red";
+        } else {
+            Sensor2 = "NA";
+        }
+
+        if (Sensor1 == Sensor2){
+            if (Sensor1.equals("Yellow")){
+                return  "Yellow";
+            } else if (Sensor1.equals("Blue")) {
+                return  "Blue";
+            } else if (Sensor1.equals("Red")) {
+                return  "Red";
+            } else {
+                return  "NA";
+            }
+        } else {
+            return "MixedState";
+        }
     }
 
     /**

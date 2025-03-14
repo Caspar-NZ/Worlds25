@@ -25,7 +25,7 @@ public class ZZColourConfiguration extends LinearOpMode {
 
         crf.setPin1Digital(ColorRangefinder.DigitalMode.HSV, 0 / 360.0 * 255, 50 / 360.0 * 255); // red
         crf.setPin1Digital(ColorRangefinder.DigitalMode.HSV, 60 / 360.0 * 255, 77.1 / 360.0 * 255); // yellow updated
-        crf.setPin1DigitalMaxDistance(ColorRangefinder.DigitalMode.HSV, 20); // 20mm or closer requirement
+        crf.setPin1DigitalMaxDistance(ColorRangefinder.DigitalMode.HSV, 12); // 20mm or closer requirement
 
         waitForStart();
 
