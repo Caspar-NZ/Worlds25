@@ -13,8 +13,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@Autonomous(name = "Example Auto Blue", group = "Examples")
-public class ExampleBucketAuto extends OpMode {
+@Autonomous(name = "example Auto Blue", group = "Examples")
+public class exampleBlueAuto extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
@@ -43,19 +43,13 @@ public class ExampleBucketAuto extends OpMode {
     private final Pose pose20 = new Pose(41.37, 69.61, Math.toRadians(1));  // Line 19
     private final Pose pose21 = new Pose(9.35, 47.54, Math.toRadians(1));   // Line 20
 
+    private PathChain combinedPath;
+
     private PathChain path1, path2, path3, path4, path5, path6, path7, path8, path9, path10, path11, path12, path13, path14, path15, path16, path17, path18, path19, path20, path21;
 
     // Build the paths
     public void buildPaths() {
-        path1 = createPath(pose1, pose2);   // Start from pose1
-        path2 = createPath(pose2, pose3);   // Go to pose3
-        path3 = createPath(pose3, pose4);   // Path 3
-        path4 = createPath(pose4, pose5);   // Path 4
-        path5 = createPath(pose5, pose6);   // Path 5
-        path6 = createPath(pose6, pose7);   // Path 6
-        path7 = createPath(pose7, pose8);   // Path 7
-        path8 = createPath(pose8, pose9);   // Path 8
-        path9 = createPath(pose9, pose10);  // Path 9
+
         path10 = createPath(pose10, pose11); // Path 10
         path11 = createPath(pose11, pose12); // Path 11
         path12 = createPath(pose12, pose13); // Path 12
@@ -78,153 +72,116 @@ public class ExampleBucketAuto extends OpMode {
     }
 
     // Update autonomous path state
+
+    public void buildPaths2() {
+        // Create the path chain
+        PathChain pathChain = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(pose1), new Point(pose2))) // Path from pose1 to pose2
+                .setLinearHeadingInterpolation(pose1.getHeading(), pose2.getHeading())  // Interpolate heading between pose1 and pose2
+                .addPath(new BezierLine(new Point(pose2), new Point(pose3))) // Path from pose2 to pose3
+                .setLinearHeadingInterpolation(pose2.getHeading(), pose3.getHeading())  // Interpolate heading between pose2 and pose3
+                .addPath(new BezierLine(new Point(pose3), new Point(pose4))) // Path from pose3 to pose4
+                .setLinearHeadingInterpolation(pose3.getHeading(), pose4.getHeading())  // Interpolate heading between pose3 and pose4
+                .addPath(new BezierLine(new Point(pose4), new Point(pose5))) // Path from pose4 to pose5
+                .setLinearHeadingInterpolation(pose4.getHeading(), pose5.getHeading())  // Interpolate heading between pose4 and pose5
+                .addPath(new BezierLine(new Point(pose5), new Point(pose6))) // Path from pose5 to pose6
+                .setLinearHeadingInterpolation(pose5.getHeading(), pose6.getHeading())  // Interpolate heading between pose5 and pose6
+                .addPath(new BezierLine(new Point(pose6), new Point(pose7))) // Path from pose6 to pose7
+                .setLinearHeadingInterpolation(pose6.getHeading(), pose7.getHeading())  // Interpolate heading between pose6 and pose7
+                .addPath(new BezierLine(new Point(pose7), new Point(pose8))) // Path from pose7 to pose8
+                .setLinearHeadingInterpolation(pose7.getHeading(), pose8.getHeading())  // Interpolate heading between pose7 and pose8
+                .addPath(new BezierLine(new Point(pose8), new Point(pose9))) // Path from pose8 to pose9
+                .setLinearHeadingInterpolation(pose8.getHeading(), pose9.getHeading())  // Interpolate heading between pose8 and pose9
+                .addPath(new BezierLine(new Point(pose9), new Point(pose10))) // Path from pose9 to pose10
+                .setLinearHeadingInterpolation(pose9.getHeading(), pose10.getHeading())  // Interpolate heading between pose9 and pose10
+                .setPathEndTimeoutConstraint(3.0) // Timeout for the entire path chain
+                .build();
+
+        combinedPath = pathChain; // Assign the pathChain to the combinedPath
+    }
     public void autonomousPathUpdate() {
         switch (pathState) {
+
+
             case 0:
-                follower.setMaxPower(100); // Set speed to 100%
-                follower.followPath(path1, false);
-                setPathState(1);
-                break;
+                if(!follower.isBusy()){
+                    follower.setMaxPower(100);
+                    follower.followPath(combinedPath, false);
+                    setPathState(1);
+
+                }
             case 1:
                 if (!follower.isBusy()) {
                     follower.setMaxPower(100); // Set speed to 100%
-                    follower.followPath(path2, false);
+                    follower.followPath(path12, false);
                     setPathState(2);
                 }
                 break;
             case 2:
                 if (!follower.isBusy()) {
                     follower.setMaxPower(100); // Set speed to 100%
-                    follower.followPath(path3, false);
+                    follower.followPath(path13, false);
                     setPathState(3);
                 }
                 break;
             case 3:
                 if (!follower.isBusy()) {
                     follower.setMaxPower(100); // Set speed to 100%
-                    follower.followPath(path4, false);
+                    follower.followPath(path14, false);
                     setPathState(4);
                 }
                 break;
             case 4:
                 if (!follower.isBusy()) {
                     follower.setMaxPower(100); // Set speed to 100%
-                    follower.followPath(path5, false);
+                    follower.followPath(path15, false);
                     setPathState(5);
                 }
                 break;
             case 5:
                 if (!follower.isBusy()) {
                     follower.setMaxPower(100); // Set speed to 100%
-                    follower.followPath(path6, false);
+                    follower.followPath(path16, false);
                     setPathState(6);
                 }
                 break;
             case 6:
                 if (!follower.isBusy()) {
                     follower.setMaxPower(100); // Set speed to 100%
-                    follower.followPath(path7, false);
+                    follower.followPath(path17, false);
                     setPathState(7);
                 }
                 break;
             case 7:
                 if (!follower.isBusy()) {
                     follower.setMaxPower(100); // Set speed to 100%
-                    follower.followPath(path8, false);
+                    follower.followPath(path18, false);
                     setPathState(8);
                 }
                 break;
             case 8:
                 if (!follower.isBusy()) {
                     follower.setMaxPower(100); // Set speed to 100%
-                    follower.followPath(path9, false);
+                    follower.followPath(path19, false);
                     setPathState(9);
                 }
                 break;
             case 9:
                 if (!follower.isBusy()) {
                     follower.setMaxPower(100); // Set speed to 100%
-                    follower.followPath(path10, false);
+                    follower.followPath(path20, false);
                     setPathState(10);
                 }
                 break;
             case 10:
-                if (!follower.isBusy()) {
-                    follower.setMaxPower(100); // Set speed to 100%
-                    follower.followPath(path11, false);
-                    setPathState(11);
-                }
-                break;
-            case 11:
-                if (!follower.isBusy()) {
-                    follower.setMaxPower(100); // Set speed to 100%
-                    follower.followPath(path12, false);
-                    setPathState(12);
-                }
-                break;
-            case 12:
-                if (!follower.isBusy()) {
-                    follower.setMaxPower(100); // Set speed to 100%
-                    follower.followPath(path13, false);
-                    setPathState(13);
-                }
-                break;
-            case 13:
-                if (!follower.isBusy()) {
-                    follower.setMaxPower(100); // Set speed to 100%
-                    follower.followPath(path14, false);
-                    setPathState(14);
-                }
-                break;
-            case 14:
-                if (!follower.isBusy()) {
-                    follower.setMaxPower(100); // Set speed to 100%
-                    follower.followPath(path15, false);
-                    setPathState(15);
-                }
-                break;
-            case 15:
-                if (!follower.isBusy()) {
-                    follower.setMaxPower(100); // Set speed to 100%
-                    follower.followPath(path16, false);
-                    setPathState(16);
-                }
-                break;
-            case 16:
-                if (!follower.isBusy()) {
-                    follower.setMaxPower(100); // Set speed to 100%
-                    follower.followPath(path17, false);
-                    setPathState(17);
-                }
-                break;
-            case 17:
-                if (!follower.isBusy()) {
-                    follower.setMaxPower(100); // Set speed to 100%
-                    follower.followPath(path18, false);
-                    setPathState(18);
-                }
-                break;
-            case 18:
-                if (!follower.isBusy()) {
-                    follower.setMaxPower(100); // Set speed to 100%
-                    follower.followPath(path19, false);
-                    setPathState(19);
-                }
-                break;
-            case 19:
-                if (!follower.isBusy()) {
-                    follower.setMaxPower(100); // Set speed to 100%
-                    follower.followPath(path20, false);
-                    setPathState(20);
-                }
-                break;
-            case 20:
                 if (!follower.isBusy()) {
                     telemetry.addData("Autonomous", "Completed all paths.");
                 }
                 break;
         }
     }
+
+
 
 
     // Set the current path state and reset the timer
