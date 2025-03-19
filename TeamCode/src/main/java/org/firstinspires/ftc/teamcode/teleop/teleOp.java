@@ -75,9 +75,6 @@ public class teleOp extends LinearOpMode {
     private AllianceColor alliance = AllianceColor.RED;
 
 
-
-    boolean readyToTakeADump = false;
-
     private int i = 0;
 
     boolean doubleDoubleTarget = false;
@@ -320,15 +317,15 @@ public class teleOp extends LinearOpMode {
             }
 
             // ------------------- MAIN INTAKE LOGIC (when not in goHome sequence) -------------------
-            if (!readyToTakeADump && !goingHome && rotationMode.equalsIgnoreCase("INTAKE")) {
-                if (detectedColor != TargetState.NONE) {
+            if (!goingHome && rotationMode.equalsIgnoreCase("INTAKE")) {
+                if (detectedColor != TargetState.NONE && detectedColor != TargetState.MIXED && doubleDouble) {
                     if (doubleDoubleTarget) {
                         // TARGET PIECE: Stop intake immediately and start goHome sequence.
                         intake.setSpeed(0, 0);
                         goingHome = true;
-                        rejecting = false;
                         goHomeWaitStart = currentTime;
-                    } else if (doubleDouble){
+                        rejecting = false;
+                    } else {
                         // NON-TARGET: Reject it.
                         // Force both blockers open so the piece passes through.
                         intake.setInnerBlockOpen(true);
@@ -354,7 +351,7 @@ public class teleOp extends LinearOpMode {
                         } else {
                             intake.setSpeed(rejectionSpeed, rejectionSpeed);
                         }
-                    } else {
+                    }else {
                         // NORMAL MANUAL INTAKE CONTROL.
                         double intakeSpeed;
                         if (currentGamepad2.right_trigger > 0.1) {
@@ -388,15 +385,18 @@ public class teleOp extends LinearOpMode {
             }
 
             if (currentGamepad2.x && previousGamepad2.x){
-                intake.setTimedIntake(1, 11, 0.8);
+                intake.setTimedIntake(1, 1, 0.8);
                 intake.setInnerBlockOpen(true);
                 intake.setOuterBlockOpen(true);
+            }
+            if (currentGamepad2.left_bumper){
+                goingHome = true;
             }
 
 
 
             // ------------------- GO HOME (TARGET DELIVERY) SEQUENCE -------------------
-            if (!readyToTakeADump && goingHome) {
+            if (goingHome) {
                 // Stop the intake.
                 intake.setSpeed(0, 0);
                 outtake.specDropAtIntakePos(true);
@@ -426,7 +426,7 @@ public class teleOp extends LinearOpMode {
                 }
             }
 
-            if (!goingHome && !readyToTakeADump) {
+            if (!goingHome) {
                 double horiInput = -currentGamepad2.right_stick_y;
 
                 if (Math.abs(horiInput) > JOYSTICK_DEADZONE) {
@@ -609,7 +609,6 @@ public class teleOp extends LinearOpMode {
             telemetry.addData("Rejecting", rejecting);
             telemetry.addData("GoHome", goingHome);
             telemetry.addData("Loop Time", loopTime);
-            telemetry.addData("Average Loop Time", avgLoopTime);
             telemetry.addData("Highest Loop Time", highestLoopTime);
             telemetry.addData("Lowest Loop Time", lowestLoopTime);
             telemetry.update();
