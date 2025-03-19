@@ -1,12 +1,10 @@
 package org.firstinspires.ftc.teamcode.functions;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
-
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class outtake {
-    private Servo clawRotate, claw, specDrop, specRelease;
+    private final Servo clawRotate, claw, specDrop, specRelease, sampleRotate, sampleRelease;
     final private double rotateAtIntake = 0.94; //1.0
     final private double rotateAtDelivery = 0.32; //0.32
     final private double clawOpen = 0.0;
@@ -15,15 +13,12 @@ public class outtake {
     final private double specDropAtDelivery = 0.76;
     final private double specReleaseBlocking = 0.05;
     final private double specReleaseOpen = 0.28;
-
-    public boolean isClawOpen;
-    public boolean BucketPositionAtIntake;
-    public boolean clawAtIntake;
-    public boolean specDropOpen;
-    private double setHookPos;
-    private double setClawPos;
-    private double setBucketPos;
-    private double setReleasePos;
+    final private double sampleOpen = 0.5;
+    final private double sampleClosed = 0.5;
+    final private double sampleAtIntake = 0.5;
+    final private double sampleAtDelivery = 0.5;
+    public boolean isClawOpen, isSampleOpen, samplePositionAtIntake, BucketPositionAtIntake,clawAtIntake,specDropOpen;
+    private double setHookPos, setClawPos, setBucketPos, setReleasePos, setSamplePos, setSampleRotatePos;
     public boolean dumpingYellows = true;
     public boolean scoringSamples = false;
     public boolean scoringSpecs = true;
@@ -33,12 +28,16 @@ public class outtake {
         claw = hardwareMap.servo.get("claw");
         specDrop = hardwareMap.servo.get("specDrop");
         specRelease = hardwareMap.servo.get("specRelease");
+        sampleRotate = hardwareMap.servo.get("sampleRotate");
+        sampleRelease = hardwareMap.servo.get("sampleRelease");
     }
     public void update(){
         clawRotate.setPosition(setHookPos);
         claw.setPosition(setClawPos);
         specDrop.setPosition(setBucketPos);
         specRelease.setPosition(setReleasePos);
+        sampleRelease.setPosition(setSamplePos);
+        sampleRotate.setPosition(setSampleRotatePos);
     }
     public void hookAtIntake(Boolean intake){
         if (intake){
@@ -56,6 +55,24 @@ public class outtake {
         } else{
             isClawOpen = false;
             setClawPos = clawClosed;
+        }
+    }
+    public void sampleReleaseOpen(boolean open){
+        if (open){
+            isSampleOpen = true;
+            setSamplePos = sampleOpen;
+        } else{
+            isSampleOpen = false;
+            setSamplePos = sampleClosed;
+        }
+    }
+    public void sampleAtIntakePos(Boolean intake){
+        if (intake){
+            samplePositionAtIntake = true;
+            setSampleRotatePos = sampleAtIntake;
+        } else {
+            samplePositionAtIntake = false;
+            setSampleRotatePos = sampleAtDelivery;
         }
     }
     public void specDropAtIntakePos(Boolean intake){

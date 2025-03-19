@@ -15,15 +15,13 @@ public class horiSlides {
     private static final double DEADZONE = 5;
     private static final double MAX_POWER = 1;
 
-    private DcMotor leftHori;
-    private DcMotor rightHori;
+    private final DcMotor leftHori, rightHori;
     private double targetPosition = 0;
 
     // Touch sensors for horizontal slide limits.
-    private TouchSensor leftMag;
-    private TouchSensor rightMag;
+    private final TouchSensor leftMag, rightMag;
 
-    private BasicPID pidController;
+    private final BasicPID pidController;
     double Power;
 
     public horiSlides(HardwareMap hardwareMap) {
@@ -57,12 +55,12 @@ public class horiSlides {
         int currentPosLeft = leftHori.getCurrentPosition();
         int currentPosRight = rightHori.getCurrentPosition();
         int averagePosition = (currentPosLeft + currentPosRight) / 2;
-
-        if (leftMag.isPressed() || rightMag.isPressed()) {
+        boolean magsTriggered = magResult();
+        if (magsTriggered) {
             MIN_POSITION = averagePosition;
         }
 
-        if ((targetPosition < averagePosition) && (targetPosition < MIN_POSITION) && (!leftMag.isPressed() && !rightMag.isPressed())) { //this means we're requesting to go down
+        if ((targetPosition < averagePosition) && (targetPosition < MIN_POSITION) && (magsTriggered)) { //this means we're requesting to go down
             MIN_POSITION -= 10;
             targetPosition = MIN_POSITION + 1;
         }
@@ -101,16 +99,8 @@ public class horiSlides {
         leftHori.setPower(-powerLeft);
         rightHori.setPower(-powerRight);
     }
-    public double currentPower() {
-     return Power;
-    }
     public boolean magResult(){
-        if (leftMag.isPressed() || rightMag.isPressed()){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return leftMag.isPressed() || rightMag.isPressed();
     }
     public double getCurrentPosition() {
         return (leftHori.getCurrentPosition() + rightHori.getCurrentPosition()) / 2.0;

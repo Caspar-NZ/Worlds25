@@ -5,23 +5,12 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-/**
- * Intake subsystem class.
- *
- * This class encapsulates control of:
- *   - Intake wheels (CRServos)
- *   - Inner and Outer blocker servos
- *   - Rotation servos (leftRotate and rightRotate), which share an inverse relationship.
- *
- * Teleop code can change target values via setter functions (e.g. setSpeed(), setInnerBlock(), setRotation(), etc.)
- * and then call update() each loop to send the latest values to hardware.
- */
+
 public class intake {
 
     // --- Hardware Devices ---
-    private CRServo leftIntake, rightIntake;
-    private Servo innerBlock, outerBlock;
-    private Servo leftRotate, rightRotate;
+    private final CRServo leftIntake, rightIntake;
+    private final Servo innerBlock, outerBlock, leftRotate, rightRotate;
     public DigitalChannel pin0, pin1, epin0, epin1;  // For color detection
 
     // --- Constants: Inner & Outer Block positions ---
@@ -63,8 +52,9 @@ public class intake {
     private double timedLeftSpeed = 0;
     private double timedRightSpeed = 0;
     private long timedEndTimeMs = 0;
-    public String target1,target2;
-    public String Sensor1, Sensor2;
+    public TargetState target1 = TargetState.NONE;
+    public TargetState target2 = TargetState.NONE;
+
 
     // --- Constructor ---
     public intake(HardwareMap hardwareMap) {
@@ -126,77 +116,48 @@ public class intake {
      * Returns the currently detected color.
      * Logic: (pin0 && pin1) = "Yellow", (pin0 && !pin1) = "Blue", (!pin0 && pin1) = "Red", else "NA".
      */
-    public String getDetectedColor() {
+    public TargetState getDetectedColor() {
         boolean state0 = pin0.getState();
         boolean state1 = pin1.getState();
         boolean estate0 = epin0.getState();
         boolean estate1 = epin1.getState();
+
+        TargetState sensor1;
+        TargetState sensor2;
+
         if (state0 && state1) {
-            Sensor1 = "Yellow";
-        } else if (state0 && !state1) {
-            Sensor1 = "Blue";
-        } else if (!state0 && state1) {
-            Sensor1 = "Red";
+            sensor1 = TargetState.YELLOW;
+        } else if (state0) {
+            sensor1 = TargetState.BLUE;
+        } else if (state1) {
+            sensor1 = TargetState.RED;
         } else {
-            Sensor1 = "NA";
+            sensor1 = TargetState.NONE;
         }
 
         if (estate0 && estate1) {
-            Sensor2 = "Yellow";
-        } else if (estate0 && !estate1) {
-            Sensor2 = "Blue";
-        } else if (!estate0 && estate1) {
-            Sensor2 = "Red";
+            sensor2 = TargetState.YELLOW;
+        } else if (estate0) {
+            sensor2 = TargetState.BLUE;
+        } else if (estate1) {
+            sensor2 = TargetState.RED;
         } else {
-            Sensor2 = "NA";
+            sensor2 = TargetState.NONE;
         }
 
-        if (Sensor1 == Sensor2){
-            if (Sensor1.equals("Yellow")){
-                return  "Yellow";
-            } else if (Sensor1.equals("Blue")) {
-                return  "Blue";
-            } else if (Sensor1.equals("Red")) {
-                return  "Red";
-            } else {
-                return  "NA";
-            }
+        // If both sensors agree, return that value.
+        if (sensor1 == sensor2) {
+            return sensor1;
         } else {
-            return "MixedState";
+            return TargetState.MIXED;
         }
     }
-
-    /**
-     * Returns whether the inner block is open.
-     * @return true if inner block is open, false otherwise.
-     */
-    public boolean isInnerOpen() {
-        return innerBlockTarget == INNER_BLOCK_OPEN;
-    }
-
-    /**
-     * Returns whether the outer block is open.
-     * @return true if outer block is open, false otherwise.
-     */
-    public boolean isOuterOpen() {
-        return outerBlockTarget == OUTER_BLOCK_OPEN;
-    }
-
-
-
     /**
      * Returns the current rotation mode as a String.
      * Will be one of "TRANSFER", "INTAKE", or "TUCKED".
      */
     public String getRotationMode() {
         return currentRotation.toString();
-    }
-
-    /**
-     * Returns the current intake speeds as an array: [leftIntakePower, rightIntakePower].
-     */
-    public double[] getIntakeSpeeds() {
-        return new double[] { leftIntakePower, rightIntakePower };
     }
 
     // --- Setter Methods ---
@@ -266,32 +227,27 @@ public class intake {
     }
 
     public void setTarget(int yellow, int red, int blue){
-        if (yellow+red+blue > 1){
-            target1 = "Yellow";
-            if (red>0){
-                target2 = "Red";
-            } else {
-                target2 = "Blue";
-            }
+        if (yellow + red + blue > 1) {
+            target1 = TargetState.YELLOW;
+            target2 = (red > 0) ? TargetState.RED : TargetState.BLUE;
         } else {
             if (yellow > 0) {
-                target1 = "Yellow";
-                target2="null";
-            } else if (red > 0){
-                target1="null";
-                target2 = "Red";
+                target1 = TargetState.YELLOW;
+                target2 = TargetState.NONE;
+            } else if (red > 0) {
+                target1 = TargetState.NONE;
+                target2 = TargetState.RED;
             } else {
-                target1="null";
-                target2 = "Blue";
+                target1 = TargetState.NONE;
+                target2 = TargetState.BLUE;
             }
         }
     }
 
+
     public boolean isTarget(){
-        if (getDetectedColor() == target1 || getDetectedColor() == target2) {
-            return true;
-        } else {
-            return false;
-        }
+        TargetState detected = getDetectedColor();
+        return (detected == target1 || detected == target2);
     }
+
 }

@@ -17,13 +17,12 @@ public class vertSlide {
     private static final double MAX_POWER = 1.0;        // Maximum motor power
     private static final double MAX_CURRENT = 3.0;      // Current limit in amps
 
-    private DcMotorEx vert0;
-    private DcMotorEx vert1;
+    private final DcMotorEx vert0, vert1;
     private double targetPosition = 0;
     double powerReq;
     TouchSensor slideMag;  // Use the sensor name "vertMag" per your instructions
 
-    private BasicPID pidController;
+    private final BasicPID pidController;
 
     public vertSlide(HardwareMap hardwareMap) {
         vert0 = hardwareMap.get(DcMotorEx.class, "vert0");
@@ -110,7 +109,4 @@ public class vertSlide {
         return power;
     }
 
-    public double currentPower() {
-        return powerReq;
-    }
 }
