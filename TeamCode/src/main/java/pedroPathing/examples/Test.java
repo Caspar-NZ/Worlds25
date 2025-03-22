@@ -64,7 +64,7 @@ public class Test extends OpMode {
     private final Pose startPose = new Pose(7.32, 77.2, Math.toRadians(0));//72.2
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
-    private final Pose scorePose = new Pose(41.57, 77.2, Math.toRadians(0));
+    private final Pose scorePose = new Pose(40, 77.2, Math.toRadians(0));
 
     /** Highest (Third) Sample from the Spike Mark */
     private final Pose backoff = new Pose(36, 50, Math.toRadians(0));
@@ -194,14 +194,19 @@ public class Test extends OpMode {
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
-                follower.followPath(firstDo, false);
-
+                delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION+475), 0);
+                follower.followPath(firstDo, true);
+                outtake.hookAtIntake(false, false);
+                delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION+650), 900);
+                delayedRun(()-> outtake.clawOpen(true), 1300);
                 setPathState(1);
                 break;
             case 1:
                 follower.setMaxPower(100);
                 if(!follower.isBusy()){
-                    delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION), 0);
+                    delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION+1), 1000);
+                    delayedRun(() -> outtake.hookAtIntake(true, false), 1000);
+                    outtake.specDropAtIntakePos(true);
                     follower.followPath(sample, false);
                     setPathState(2);
                 }
@@ -335,7 +340,7 @@ public class Test extends OpMode {
         intake.setOuterBlockOpen(true);
         horizontalSlides.setPosition(0);
         outtake.hookAtIntake(false,true);
-        outtake.clawOpen(true);
+        outtake.clawOpen(false);
         outtake.specDropAtIntakePos(true);
         outtake.specDropOpen(false);
         verticalSlides.setPosition(0);
@@ -362,7 +367,6 @@ public class Test extends OpMode {
      * It runs all the setup actions, including building paths and starting the path system **/
     @Override
     public void start() {
-        delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 50), 0);
         opmodeTimer.resetTimer();
         setPathState(0);
     }
