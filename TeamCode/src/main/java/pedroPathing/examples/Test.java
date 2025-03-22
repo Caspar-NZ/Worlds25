@@ -28,6 +28,8 @@ public class Test extends OpMode {
 
 
 
+
+
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
 
@@ -45,41 +47,43 @@ public class Test extends OpMode {
      * Lets assume the Robot is facing the human player and we want to score in the bucket */
 
     /** Start Pose of our robot */
-    private final Pose startPose = new Pose(7.32, 72.2, Math.toRadians(0));
+    private final Pose startPose = new Pose(7.32, 77.2, Math.toRadians(0));//72.2
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
-    private final Pose scorePose = new Pose(41.57, 72.2, Math.toRadians(0));
+    private final Pose scorePose = new Pose(41.57, 77.2, Math.toRadians(0));
 
     /** Highest (Third) Sample from the Spike Mark */
-    private final Pose backoff = new Pose(33, 48, Math.toRadians(0));
+    private final Pose backoff = new Pose(36, 50, Math.toRadians(0));
 
     /** Park Pose for our robot, after we do all of the scoring. */
-    private final Pose sample1 = new Pose(45, 36, Math.toRadians(0));
+    private final Pose sample1 = new Pose(42.2, 36, Math.toRadians(0));
 
     /** Park Control Pose for our robot, this is used to manipulate the bezier curve that we will create for the parking.
      * The Robot will not go to this pose, it is used a control point for our bezier curve. */
-    private final Pose sample1back = new Pose(14, 27, Math.toRadians(0));
+    private final Pose sample1back = new Pose(16, 27, Math.toRadians(0));
 
-    private final Pose line6 = new Pose(45.0, 26.0, Math.toRadians(1));
-    private final Pose line7 = new Pose(14, 18.0, Math.toRadians(1));
-    private final Pose line8 = new Pose(47.0, 17.0, Math.toRadians(1));
-    private final Pose line9 = new Pose(45.0, 15.0, Math.toRadians(1));
-    private final Pose line10 = new Pose(8.6, 16.0, Math.toRadians(45));
-    private final Pose line11 = new Pose(41.5, 75.0, Math.toRadians(1));
-    private final Pose line12 = new Pose(10.0, 48.0, Math.toRadians(1));
-    private final Pose line13 = new Pose(41.0, 69.0, Math.toRadians(1));
-    private final Pose line14 = new Pose(10.0, 48.0, Math.toRadians(1));
-    private final Pose line15 = new Pose(41.0, 69.0, Math.toRadians(1));
-    private final Pose line16 = new Pose(10.0, 48.0, Math.toRadians(1));
-    private final Pose line17 = new Pose(41.0, 69.0, Math.toRadians(1));
-    private final Pose line18 = new Pose(10.0, 48.0, Math.toRadians(1));
-    private final Pose line19 = new Pose(41.0, 69.0, Math.toRadians(1));
-    private final Pose line20 = new Pose(10.0, 48.0, Math.toRadians(1));
+    private final Pose sample2 = new Pose(34.0, 27, Math.toRadians(0));
+
+    private final Pose sample2T = new Pose(43, 21.8, Math.toRadians(0));
+    private final Pose sample2B = new Pose(16, 18.0, Math.toRadians(0));
+    private final Pose sample3 = new Pose(35.0, 17.4, Math.toRadians(0));
+    private final Pose sample3T = new Pose(43, 13, Math.toRadians(0));
+    private final Pose sample3B = new Pose(8, 13, Math.toRadians(0));
+    private final Pose drop1 = new Pose(41.5, 72.0, Math.toRadians(0));
+    private final Pose pickup2 = new Pose(8.9, 47.5, Math.toRadians(0));
+    private final Pose drop2 = new Pose(38.0, 70.0, Math.toRadians(0));
+    private final Pose pickup3 = new Pose(8.9, 47.5, Math.toRadians(0));
+    private final Pose drop3 = new Pose(38.0, 70.0, Math.toRadians(0));
+    private final Pose pickup4 = new Pose(8.9, 47.5, Math.toRadians(0));
+    private final Pose drop4 = new Pose(38.0, 70.0, Math.toRadians(0));
+    private final Pose pickup5 = new Pose(8.9, 47.5, Math.toRadians(0));
+    private final Pose drop5 = new Pose(38.0, 70.0, Math.toRadians(0));
+    private final Pose line20 = new Pose(8.9, 47.0, Math.toRadians(0));
 
 
     /* These are our Paths and PathChains that we will define in buildPaths() */
     private Path scorePreload, park;
-    private PathChain firstDo, sample, third, fourth, fifth, sixth, seventh, eighth, ninth, tenth, eleventh, twelfth;
+    private PathChain firstDo, sample, third, fourth, fifth, sixth, seventh;//, eighth, ninth, tenth, eleventh, twelfth;
 
     /** Build the paths for the auto (adds, for example, constant/linear headings while doing paths)
      * It is necessary to do this so that all the paths are built before the auto starts. **/
@@ -113,66 +117,55 @@ public class Test extends OpMode {
                 .setLinearHeadingInterpolation(backoff.getHeading(), sample1.getHeading())
                 .addPath(new BezierLine(new Point(sample1), new Point(sample1back)))
                 .setLinearHeadingInterpolation(sample1.getHeading(), sample1back.getHeading())
-                .addPath(new BezierLine(new Point(sample1back), new Point(line6)))
-                .setLinearHeadingInterpolation(sample1.getHeading(), line6.getHeading())
-                .addPath(new BezierLine(new Point(line6), new Point(line7)))
-                .setLinearHeadingInterpolation(line6.getHeading(), line7.getHeading())
-                .addPath(new BezierLine(new Point(line7), new Point(line8)))
-                .setLinearHeadingInterpolation(line7.getHeading(), line8.getHeading())
-                .addPath(new BezierLine(new Point(line8), new Point(line9)))
-                .setLinearHeadingInterpolation(line8.getHeading(), line9.getHeading())
-                .addPath(new BezierLine(new Point(line9), new Point(line10)))
-                .setLinearHeadingInterpolation(line9.getHeading(), line10.getHeading())
+                .addPath(new BezierLine(new Point(sample1back), new Point(sample2)))
+                .setLinearHeadingInterpolation(sample1.getHeading(), sample2.getHeading())
+                .addPath(new BezierLine(new Point(sample2), new Point(sample2T)))
+                .setLinearHeadingInterpolation(sample2.getHeading(), sample2T.getHeading())
+                .addPath(new BezierLine(new Point(sample2T), new Point(sample2B)))
+                .setLinearHeadingInterpolation(sample2T.getHeading(), sample2B.getHeading())
+                .addPath(new BezierLine(new Point(sample2B), new Point(sample3)))
+                .setLinearHeadingInterpolation(sample2B.getHeading(), sample3.getHeading())
+                .addPath(new BezierLine(new Point(sample3), new Point(sample3T)))
+                .setLinearHeadingInterpolation(sample3.getHeading(), sample3T.getHeading())
+                .addPath(new BezierLine(new Point(sample3), new Point(sample3B)))
+                .setLinearHeadingInterpolation(sample3T.getHeading(), sample3B.getHeading())
                 .build();
 
         third = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(line10), new Point(line11)))
-                .setLinearHeadingInterpolation(line10.getHeading(), line11.getHeading())
+                .addPath(new BezierLine(new Point(sample3B), new Point(drop1)))
+                .setLinearHeadingInterpolation(sample3B.getHeading(), drop1.getHeading())
+                .addPath(new BezierLine(new Point(drop1), new Point(pickup2)))
+                .setLinearHeadingInterpolation(drop1.getHeading(), pickup2.getHeading())
                 .build();
 
         fourth = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(line11), new Point(line12)))
-                .setLinearHeadingInterpolation(line11.getHeading(), line12.getHeading())
+                .addPath(new BezierLine(new Point(pickup2), new Point(drop2)))
+                .setLinearHeadingInterpolation(pickup2.getHeading(), drop2.getHeading())
+                .addPath(new BezierLine(new Point(drop2), new Point(pickup3)))
+                .setLinearHeadingInterpolation(drop2.getHeading(), pickup3.getHeading())
                 .build();
 
         fifth = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(line12), new Point(line13)))
-                .setLinearHeadingInterpolation(line12.getHeading(), line13.getHeading())
+                .addPath(new BezierLine(new Point(pickup3), new Point(drop3)))
+                .setLinearHeadingInterpolation(pickup3.getHeading(), drop3.getHeading())
+                .addPath(new BezierLine(new Point(drop3), new Point(pickup4)))
+                .setLinearHeadingInterpolation(drop3.getHeading(), pickup4.getHeading())
                 .build();
+
 
         sixth = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(line13), new Point(line14)))
-                .setLinearHeadingInterpolation(line13.getHeading(), line14.getHeading())
+                .addPath(new BezierLine(new Point(pickup4), new Point(drop4)))
+                .setLinearHeadingInterpolation(pickup4.getHeading(), drop4.getHeading())
+                .addPath(new BezierLine(new Point(drop4), new Point(pickup5)))
+                .setLinearHeadingInterpolation(drop4.getHeading(), pickup5.getHeading())
                 .build();
+
 
         seventh = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(line14), new Point(line15)))
-                .setLinearHeadingInterpolation(line14.getHeading(), line15.getHeading())
-                .build();
-
-        eighth = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(line15), new Point(line16)))
-                .setLinearHeadingInterpolation(line15.getHeading(), line16.getHeading())
-                .build();
-
-        ninth = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(line16), new Point(line17)))
-                .setLinearHeadingInterpolation(line16.getHeading(), line17.getHeading())
-                .build();
-
-        tenth = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(line17), new Point(line18)))
-                .setLinearHeadingInterpolation(line17.getHeading(), line18.getHeading())
-                .build();
-
-        eleventh = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(line18), new Point(line19)))
-                .setLinearHeadingInterpolation(line18.getHeading(), line19.getHeading())
-                .build();
-
-        twelfth = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(line19), new Point(line20)))
-                .setLinearHeadingInterpolation(line19.getHeading(), line20.getHeading())
+                .addPath(new BezierLine(new Point(pickup5), new Point(drop5)))
+                .setLinearHeadingInterpolation(pickup5.getHeading(), drop5.getHeading())
+                .addPath(new BezierLine(new Point(drop5), new Point(line20)))
+                .setLinearHeadingInterpolation(drop5.getHeading(), line20.getHeading())
                 .build();
 
 
@@ -210,6 +203,54 @@ public class Test extends OpMode {
                     follower.followPath(fourth, false);
                     setPathState(4);
                 }
+            case 4:
+                if(!follower.isBusy()){
+                    follower.followPath(fifth, false);
+                    setPathState(5);
+                }
+                break;
+
+            case 5:
+                if(!follower.isBusy()){
+                    follower.followPath(sixth, false);
+                    setPathState(6);
+                }
+                break;
+
+            case 6:
+                if(!follower.isBusy()){
+                    follower.followPath(seventh, false);
+                    setPathState(7);
+                }
+                break;
+
+//            case 7:
+//                if(!follower.isBusy()){
+//                    follower.followPath(eighth, false);
+//                    setPathState(8);
+//                }
+//                break;
+//
+//            case 8:
+//                if(!follower.isBusy()){
+//                    follower.followPath(ninth, false);
+//                    setPathState(9);
+//                }
+//                break;
+
+//            case 9:
+//                if(!follower.isBusy()){
+//                    follower.followPath(tenth, false);
+//                    setPathState(10);
+//                }
+//                break;
+//
+//            case 10:
+//                if(!follower.isBusy()){
+//                    follower.followPath(eleventh, false);
+//                    setPathState(11);
+//                }
+//                break;
         }
     }
 
@@ -238,14 +279,18 @@ public class Test extends OpMode {
         outtake outtake = new outtake(hardwareMap);
         intake intake = new intake(hardwareMap);
 
+
+
         // Initialize intake and outtake positions.
         // Default manual configuration (right trigger): inner blocker closed, outer blocker open.
-        intake.setRotation(TRANSFER);
+        /*intake.setRotation(TRANSFER);
         intake.setInnerBlockOpen(false);
         intake.setOuterBlockOpen(true);
         horizontalSlides.setPosition(0);
         intake.update();
         horizontalSlides.update();
+
+         */
     }
 
     /** This is the main loop of the OpMode, it will run repeatedly after clicking "Play". **/
@@ -253,6 +298,12 @@ public class Test extends OpMode {
     public void loop() {
         // These loop the movements of the robot
         follower.update();
+
+        outtake.update();
+        intake.update();
+        horizontalSlides.update();
+        verticalSlides.update();
+
         autonomousPathUpdate();
 
         // Feedback to Driver Hub
@@ -282,4 +333,7 @@ public class Test extends OpMode {
     @Override
     public void stop() {
     }
+
+
+
 }
