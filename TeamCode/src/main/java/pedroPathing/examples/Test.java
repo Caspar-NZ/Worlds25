@@ -40,7 +40,7 @@ public class Test extends OpMode {
 
     private ScheduledExecutorService scheduler;
 
-
+    private double waitingTimer;
 
 
 
@@ -64,7 +64,7 @@ public class Test extends OpMode {
     private final Pose startPose = new Pose(7.32, 77.2, Math.toRadians(0));//72.2
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
-    private final Pose scorePose = new Pose(40, 77.2, Math.toRadians(0));
+    private final Pose scorePose = new Pose(39.5, 77.2, Math.toRadians(0));
 
     /** Highest (Third) Sample from the Spike Mark */
     private final Pose backoff = new Pose(36, 50, Math.toRadians(0));
@@ -194,28 +194,37 @@ public class Test extends OpMode {
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
-                delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION+475), 0);
+                delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION+465), 0);
                 follower.followPath(firstDo, true);
                 outtake.hookAtIntake(false, false);
-                delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION+650), 900);
-                delayedRun(()-> outtake.clawOpen(true), 1300);
+                delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION+650), 1400);
+                delayedRun(()-> outtake.clawOpen(true), 1700);
                 setPathState(1);
+                waitingTimer = getRuntime();
                 break;
             case 1:
                 follower.setMaxPower(100);
-                if(!follower.isBusy()){
-                    delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION+1), 1000);
-                    delayedRun(() -> outtake.hookAtIntake(true, false), 1000);
-                    outtake.specDropAtIntakePos(true);
-                    follower.followPath(sample, false);
-                    setPathState(2);
+                if(waitingTimer + 0.5 < getRuntime()) {
+                    if(!follower.isBusy()){
+                        delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION+1), 1000);
+                        delayedRun(() -> outtake.hookAtIntake(true, false), 1000);
+                        follower.followPath(sample, false);
+                        setPathState(2);
+                        waitingTimer = getRuntime();
+                    }
                 }
+
                 break;
 
             case 2:
                 if(!follower.isBusy()){
-                    follower.followPath(third, false);
-                    setPathState(3);
+                    if(waitingTimer + 0.2 < getRuntime()) {
+                        delayedRun(() -> outtake.clawOpen(false), 0);
+                        delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 465), 50);
+                        delayedRun(() -> outtake.hookAtIntake(false, false), 500);
+                        follower.followPath(third, false);
+                        setPathState(3);
+                    }
                 }
                 break;
 
