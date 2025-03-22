@@ -19,6 +19,10 @@ import org.firstinspires.ftc.teamcode.functions.outtake;
 import org.firstinspires.ftc.teamcode.functions.intake;
 import org.firstinspires.ftc.teamcode.functions.vertSlide;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
@@ -30,6 +34,11 @@ public class Test extends OpMode {
     private vertSlide verticalSlides;
     private outtake outtake;
     private intake intake;
+
+    private Thread asyncUpdatesThread;
+    private volatile boolean asyncThread = true;
+
+    private ScheduledExecutorService scheduler;
 
 
 
@@ -186,7 +195,8 @@ public class Test extends OpMode {
         switch (pathState) {
             case 0:
                 follower.followPath(firstDo, false);
-                outtake.hookAtIntake(false);
+                delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 450), 0);
+                outtake.hookAtIntake(false,false);
                 setPathState(1);
                 break;
             case 1:
@@ -285,6 +295,33 @@ public class Test extends OpMode {
         outtake = new outtake(hardwareMap);
         intake = new intake(hardwareMap);
 
+        scheduler = Executors.newScheduledThreadPool(1);
+
+        // Define the runnable for async updates
+        Runnable asyncUpdates = new Runnable() {
+            @Override
+            public void run() {
+                while (asyncThread && !Thread.currentThread().isInterrupted()) {
+                    horizontalSlides.update();
+                    verticalSlides.update();
+                    outtake.update();
+                    intake.update();
+
+                    // Add slight delay to avoid rapid updates causing jitter
+                    try {
+                        Thread.sleep(5); // Sleep for 5 ms to give hardware time to respond
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt(); // Ensure the thread exits if interrupted
+                    }
+                }
+            }
+        };
+
+        // Initialize but do not start the thread yet
+        asyncUpdatesThread = new Thread(asyncUpdates);
+
+
+
 
 
         // Initialize intake and outtake positions.
@@ -293,6 +330,13 @@ public class Test extends OpMode {
         intake.setInnerBlockOpen(false);
         intake.setOuterBlockOpen(true);
         horizontalSlides.setPosition(0);
+        outtake.hookAtIntake(false,true);
+        outtake.clawOpen(true);
+        outtake.specDropAtIntakePos(true);
+        outtake.specDropOpen(false);
+        verticalSlides.setPosition(0);
+        outtake.update();
+        verticalSlides.update();
         intake.update();
         horizontalSlides.update();
 
@@ -324,6 +368,8 @@ public class Test extends OpMode {
      * It runs all the setup actions, including building paths and starting the path system **/
     @Override
     public void start() {
+        asyncThread = true;
+        asyncUpdatesThread.start();
         opmodeTimer.resetTimer();
         setPathState(0);
     }
@@ -331,6 +377,25 @@ public class Test extends OpMode {
     /** We do not use this because everything should automatically disable **/
     @Override
     public void stop() {
+        shutdownThread();
+        scheduler.shutdown();
+    }
+
+    private void delayedRun(Runnable action, long delayInMillis) {
+        scheduler.schedule(action, delayInMillis, TimeUnit.MILLISECONDS);
+    }
+
+    // Method to properly stop the asyncUpdatesThread
+    private void shutdownThread() {
+        asyncThread = false; // Stop the loop in the async runnable
+        if (asyncUpdatesThread != null) {
+            asyncUpdatesThread.interrupt(); // Interrupt any sleeping or waiting thread
+            try {
+                asyncUpdatesThread.join(); // Wait for the thread to terminate properly
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt(); // Handle interruption and ensure the main thread isn't left interrupted
+            }
+        }
     }
 
 

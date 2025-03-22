@@ -119,7 +119,7 @@ public class teleOp extends LinearOpMode {
         // Maintain target values continuously.
         intake.setTarget(1, 0, 0);
 
-        outtake.hookAtIntake(true);
+        outtake.hookAtIntake(true,false);
         outtake.clawOpen(true);
         outtake.specDropAtIntakePos(true);
         outtake.specDropOpen(false);
@@ -518,7 +518,7 @@ public class teleOp extends LinearOpMode {
             ////////////////////Outake Yellow handling Logic ////////////////
             if (outtake.scoringSamples){
                 if ((currentGamepad1.dpad_up && !previousGamepad1.dpad_up) || (currentGamepad2.dpad_up && !previousGamepad2.dpad_up)){
-                    outtake.hookAtIntake(true);
+                    outtake.hookAtIntake(true,false);
                     vertSlidesTarget = vertSlide.MAX_POSITION;
                 }
             }
@@ -542,7 +542,7 @@ public class teleOp extends LinearOpMode {
                     specTiming = currentTime;
                 } else if ((currentGamepad1.y && !previousGamepad1.y)||(currentGamepad2.dpad_up && !previousGamepad2.dpad_up) || (currentGamepad1.right_bumper && !previousGamepad1.right_bumper) ){
                     if (readyToGoToDelivery){
-                        outtake.hookAtIntake(false);
+                        outtake.hookAtIntake(false,false);
                         vertSlidesTarget = vertSlide.MIN_POSITION +450;
                         readyToGoToDelivery = false;
                         readyToDeliver = true;
@@ -561,7 +561,7 @@ public class teleOp extends LinearOpMode {
                     }
                 }
                 if (currentGamepad1.left_bumper && !previousGamepad1.left_bumper){
-                    outtake.hookAtIntake(true);
+                    outtake.hookAtIntake(true,false);
                     outtake.clawOpen(true);
                     specimenInClaw = false;
                     vertSlidesTarget = vertSlide.MIN_POSITION +1;
@@ -580,7 +580,7 @@ public class teleOp extends LinearOpMode {
                     vertSlidesTarget = vertSlide.MIN_POSITION +1;
                 }
                 if (specimenRunTimer && specimenDelivTimer +0.7 <currentTime){
-                    outtake.hookAtIntake(true);
+                    outtake.hookAtIntake(true,false);
                     specimenRunTimer = false;
                 }
 
