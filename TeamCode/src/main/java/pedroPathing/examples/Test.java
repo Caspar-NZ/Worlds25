@@ -12,13 +12,15 @@ import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.functions.horiSlides;
 import org.firstinspires.ftc.teamcode.functions.outtake;
 import org.firstinspires.ftc.teamcode.functions.intake;
 import org.firstinspires.ftc.teamcode.functions.vertSlide;
 
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -26,9 +28,12 @@ import java.util.concurrent.TimeUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-
 @Autonomous(name = "testAuto", group = "Examples")
 public class Test extends OpMode {
+
+    private double slowdown = 1.0;
+
+    //private LynxModule expansionHub;
 
     private horiSlides horizontalSlides;
     private vertSlide verticalSlides;
@@ -42,42 +47,18 @@ public class Test extends OpMode {
 
     private double waitingTimer;
 
-
-
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
-
-    /** This is the variable where we store the state of our auto.
-     * It is used by the pathUpdate method. */
     private int pathState;
 
-    /* Create and Define Poses + Paths
-     * Poses are built with three constructors: x, y, and heading (in Radians).
-     * Pedro uses 0 - 144 for x and y, with 0, 0 being on the bottom left.
-     * (For Into the Deep, this would be Blue Observation Zone (0,0) to Red Observation Zone (144,144).)
-     * Even though Pedro uses a different coordinate system than RR, you can convert any roadrunner pose by adding +72 both the x and y.
-     * This visualizer is very easy to use to find and create paths/pathchains/poses: <https://pedro-path-generator.vercel.app/>
-     * Lets assume our robot is 18 by 18 inches
-     * Lets assume the Robot is facing the human player and we want to score in the bucket */
-
-    /** Start Pose of our robot */
-    private final Pose startPose = new Pose(7.32, 77.2, Math.toRadians(0));//72.2
-
-    /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
-    private final Pose scorePose = new Pose(39.5, 77.2, Math.toRadians(0));
-
-    /** Highest (Third) Sample from the Spike Mark */
+    // Define all poses and paths
+    private final Pose startPose = new Pose(7.32, 77.2, Math.toRadians(0));
+    private final Pose prescorepos = new Pose(35, 77.2, Math.toRadians(0));
+    private final Pose scorePose = new Pose(41, 77.2, Math.toRadians(0));
     private final Pose backoff = new Pose(36, 50, Math.toRadians(0));
-
-    /** Park Pose for our robot, after we do all of the scoring. */
     private final Pose sample1 = new Pose(42.2, 36, Math.toRadians(0));
-
-    /** Park Control Pose for our robot, this is used to manipulate the bezier curve that we will create for the parking.
-     * The Robot will not go to this pose, it is used a control point for our bezier curve. */
     private final Pose sample1back = new Pose(16, 27, Math.toRadians(0));
-
     private final Pose sample2 = new Pose(34.0, 27, Math.toRadians(0));
-
     private final Pose sample2T = new Pose(43, 21.8, Math.toRadians(0));
     private final Pose sample2B = new Pose(16, 18.0, Math.toRadians(0));
     private final Pose sample3 = new Pose(35.0, 17.4, Math.toRadians(0));
@@ -94,36 +75,21 @@ public class Test extends OpMode {
     private final Pose drop5 = new Pose(38.0, 70.0, Math.toRadians(0));
     private final Pose line20 = new Pose(8.9, 47.0, Math.toRadians(0));
 
-
-    /* These are our Paths and PathChains that we will define in buildPaths() */
+    // Paths and PathChains
     private Path scorePreload, park;
-    private PathChain firstDo, sample, third, fourth, fifth, sixth, seventh;//, eighth, ninth, tenth, eleventh, twelfth;
+    private PathChain firstDo, firstAdd, sample, third, fourth, fifth, sixth, seventh;
 
-    /** Build the paths for the auto (adds, for example, constant/linear headings while doing paths)
-     * It is necessary to do this so that all the paths are built before the auto starts. **/
     public void buildPaths() {
-
-        /* There are two major types of paths components: BezierCurves and BezierLines.
-         *    * BezierCurves are curved, and require >= 3 points. There are the start and end points, and the control points.
-         *    - Control points manipulate the curve between the start and end points.
-         *    - A good visualizer for this is [this](https://pedro-path-generator.vercel.app/).
-         *    * BezierLines are straight, and require 2 points. There are the start and end points.
-         * Paths have can have heading interpolation: Constant, Linear, or Tangential
-         *    * Linear heading interpolation:
-         *    - Pedro will slowly change the heading of the robot from the startHeading to the endHeading over the course of the entire path.
-         *    * Constant Heading Interpolation:
-         *    - Pedro will maintain one heading throughout the entire path.
-         *    * Tangential Heading Interpolation:
-         *    - Pedro will follows the angle of the path such that the robot is always driving forward when it follows the path.
-         * PathChains hold Path(s) within it and are able to hold their end point, meaning that they will holdPoint until another path is followed.
-         * Here is a explanation of the difference between Paths and PathChains <https://pedropathing.com/commonissues/pathtopathchain.html> */
-
         firstDo = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(startPose), new Point(scorePose)))
-                .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
+                .addPath(new BezierLine(new Point(startPose), new Point(prescorepos)))
+                .setLinearHeadingInterpolation(startPose.getHeading(), prescorepos.getHeading())
                 .build();
 
-        /* This is our scorePickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
+        firstAdd = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(prescorepos), new Point(scorePose)))
+                .setLinearHeadingInterpolation(prescorepos.getHeading(), scorePose.getHeading())
+                .build();
+
         sample = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(scorePose), new Point(backoff)))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), backoff.getHeading())
@@ -166,7 +132,6 @@ public class Test extends OpMode {
                 .setLinearHeadingInterpolation(drop3.getHeading(), pickup4.getHeading())
                 .build();
 
-
         sixth = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(pickup4), new Point(drop4)))
                 .setLinearHeadingInterpolation(pickup4.getHeading(), drop4.getHeading())
@@ -174,51 +139,40 @@ public class Test extends OpMode {
                 .setLinearHeadingInterpolation(drop4.getHeading(), pickup5.getHeading())
                 .build();
 
-
         seventh = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(pickup5), new Point(drop5)))
                 .setLinearHeadingInterpolation(pickup5.getHeading(), drop5.getHeading())
                 .addPath(new BezierLine(new Point(drop5), new Point(line20)))
                 .setLinearHeadingInterpolation(drop5.getHeading(), line20.getHeading())
                 .build();
-
-
-
-
-
     }
 
-    /** This switch is called continuously and runs the pathing, at certain points, it triggers the action state.
-     * Everytime the switch changes case, it will reset the timer. (This is because of the setPathState() method)
-     * The followPath() function sets the follower to run the specific path, but does NOT wait for it to finish before moving on. */
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
-                delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION+465), 0);
-                follower.followPath(firstDo, true);
+                slowdown = 1.0;
+                delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 300), 0);
+                follower.followPath(firstDo, false);
                 outtake.hookAtIntake(false, false);
-                delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION+650), 1400);
-                delayedRun(()-> outtake.clawOpen(true), 1700);
-                setPathState(1);
+                setPathState(17);
                 waitingTimer = getRuntime();
                 break;
             case 1:
                 follower.setMaxPower(100);
-                if(waitingTimer + 0.5 < getRuntime()) {
-                    if(!follower.isBusy()){
-                        delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION+1), 1000);
+                if (waitingTimer + 0 < getRuntime()) {
+                    if (!follower.isBusy()) {
+                        slowdown = 1.0;
+                        delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 1), 1000);
                         delayedRun(() -> outtake.hookAtIntake(true, false), 1000);
                         follower.followPath(sample, false);
                         setPathState(2);
                         waitingTimer = getRuntime();
                     }
                 }
-
                 break;
-
             case 2:
-                if(!follower.isBusy()){
-                    if(waitingTimer + 0.2 < getRuntime()) {
+                if (!follower.isBusy()) {
+                    if (waitingTimer + 0.2 < getRuntime()) {
                         delayedRun(() -> outtake.clawOpen(false), 0);
                         delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 465), 50);
                         delayedRun(() -> outtake.hookAtIntake(false, false), 500);
@@ -227,74 +181,59 @@ public class Test extends OpMode {
                     }
                 }
                 break;
-
             case 3:
-                if(!follower.isBusy()){
+                if (!follower.isBusy()) {
                     follower.followPath(fourth, false);
                     setPathState(4);
                 }
+                break; // Note: no break here, falling through might be intentional or not
             case 4:
-                if(!follower.isBusy()){
+                if (!follower.isBusy()) {
                     follower.followPath(fifth, false);
                     setPathState(5);
                 }
                 break;
-
             case 5:
-                if(!follower.isBusy()){
+                if (!follower.isBusy()) {
                     follower.followPath(sixth, false);
                     setPathState(6);
                 }
                 break;
-
             case 6:
-                if(!follower.isBusy()){
+                if (!follower.isBusy()) {
                     follower.followPath(seventh, false);
                     setPathState(7);
                 }
                 break;
-
-//            case 7:
-//                if(!follower.isBusy()){
-//                    follower.followPath(eighth, false);
-//                    setPathState(8);
-//                }
-//                break;
-//
-//            case 8:
-//                if(!follower.isBusy()){
-//                    follower.followPath(ninth, false);
-//                    setPathState(9);
-//                }
-//                break;
-
-//            case 9:
-//                if(!follower.isBusy()){
-//                    follower.followPath(tenth, false);
-//                    setPathState(10);
-//                }
-//                break;
-//
-//            case 10:
-//                if(!follower.isBusy()){
-//                    follower.followPath(eleventh, false);
-//                    setPathState(11);
-//                }
-//                break;
+            case 17:
+                if (!follower.isBusy() || waitingTimer + 0.8 <= getRuntime()) {
+                    slowdown = 0.3;
+                    follower.followPath(firstAdd, true);
+                    delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 650), 350);
+                    delayedRun(() -> outtake.clawOpen(true), 700);
+                    setPathState(1);
+                    waitingTimer = getRuntime();
+                }
+                break;
         }
     }
 
-    /** These change the states of the paths and actions
-     * It will also reset the timers of the individual switches **/
     public void setPathState(int pState) {
         pathState = pState;
         pathTimer.resetTimer();
     }
 
-
-    /** This method is called once at the init of the OpMode. **/
     @Override
     public void init() {
+        // If any old threads or scheduler exist, shut them down to avoid duplicate threads.
+        shutdownThread();
+        if (scheduler != null && !scheduler.isShutdown()) {
+            scheduler.shutdownNow();
+        }
+        scheduler = Executors.newScheduledThreadPool(1);
+
+        telemetry.update();
+
         pathTimer = new Timer();
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
@@ -302,6 +241,7 @@ public class Test extends OpMode {
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);
         follower.setStartingPose(startPose);
+
         buildPaths();
 
         horizontalSlides = new horiSlides(hardwareMap);
@@ -309,101 +249,85 @@ public class Test extends OpMode {
         outtake = new outtake(hardwareMap);
         intake = new intake(hardwareMap);
 
-        scheduler = Executors.newScheduledThreadPool(1);
-
         // Define the runnable for async updates
         Runnable asyncUpdates = new Runnable() {
             @Override
             public void run() {
-                while (asyncThread && !Thread.currentThread().isInterrupted()) {
-                    horizontalSlides.update();
-                    verticalSlides.update();
-                    outtake.update();
-                    intake.update();
-
-                    // Add slight delay to avoid rapid updates causing jitter
-                    try {
-                        Thread.sleep(5); // Sleep for 5 ms to give hardware time to respond
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt(); // Ensure the thread exits if interrupted
+                // Use a try-catch block to avoid unexpected thread termination.
+                try {
+                    while (asyncThread && !Thread.currentThread().isInterrupted()) {
+                        horizontalSlides.update();
+                        verticalSlides.update();
+                        outtake.update();
+                        intake.update();
+                        // Uncomment the next line if you need to clear bulk cache
+                        // expansionHub.clearBulkCache();
                     }
+                } catch (Exception e) {
+                    // Log or handle exception if needed
                 }
             }
         };
 
-        // Initialize but do not start the thread yet
-        asyncUpdatesThread = new Thread(asyncUpdates);
-
-
-
+        // Create and configure the thread.
         asyncThread = true;
+        asyncUpdatesThread = new Thread(asyncUpdates);
+        asyncUpdatesThread.setDaemon(true); // Optional: marks the thread as daemon.
         asyncUpdatesThread.start();
 
-
-
-
         // Initialize intake and outtake positions.
-        // Default manual configuration (right trigger): inner blocker closed, outer blocker open.
         intake.setRotation(TRANSFER);
         intake.setInnerBlockOpen(false);
         intake.setOuterBlockOpen(true);
-        horizontalSlides.setPosition(0);
-        outtake.hookAtIntake(false,true);
+        horizontalSlides.setPosition(1);
+        outtake.hookAtIntake(false, true);
         outtake.clawOpen(false);
         outtake.specDropAtIntakePos(true);
         outtake.specDropOpen(false);
         verticalSlides.setPosition(0);
     }
 
-    /** This is the main loop of the OpMode, it will run repeatedly after clicking "Play". **/
     @Override
     public void loop() {
-        // These loop the movements of the robot
+        follower.setMaxPower(slowdown);
         follower.update();
         autonomousPathUpdate();
-
-        // Feedback to Driv
     }
 
-
-    /** This method is called continuously after Init while waiting for "play". **/
     @Override
     public void init_loop() {
-
+        // Can add code to update telemetry or diagnostics here if needed.
     }
 
-    /** This method is called once at the start of the OpMode.
-     * It runs all the setup actions, including building paths and starting the path system **/
     @Override
     public void start() {
         opmodeTimer.resetTimer();
         setPathState(0);
     }
 
-    /** We do not use this because everything should automatically disable **/
     @Override
     public void stop() {
         shutdownThread();
-        scheduler.shutdown();
+        if (scheduler != null && !scheduler.isShutdown()) {
+            scheduler.shutdownNow();
+        }
     }
 
     private void delayedRun(Runnable action, long delayInMillis) {
         scheduler.schedule(action, delayInMillis, TimeUnit.MILLISECONDS);
     }
 
-    // Method to properly stop the asyncUpdatesThread
+    // Method to properly stop the asyncUpdatesThread.
     private void shutdownThread() {
-        asyncThread = false; // Stop the loop in the async runnable
-        if (asyncUpdatesThread != null) {
-            asyncUpdatesThread.interrupt(); // Interrupt any sleeping or waiting thread
+        asyncThread = false; // Signal the thread to stop.
+        if (asyncUpdatesThread != null && asyncUpdatesThread.isAlive()) {
+            asyncUpdatesThread.interrupt(); // Interrupt the thread.
             try {
-                asyncUpdatesThread.join(); // Wait for the thread to terminate properly
+                // Wait for the thread to finish (max 1 second).
+                asyncUpdatesThread.join(1000);
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt(); // Handle interruption and ensure the main thread isn't left interrupted
+                Thread.currentThread().interrupt(); // Preserve the interruption status.
             }
         }
     }
-
-
-
 }
