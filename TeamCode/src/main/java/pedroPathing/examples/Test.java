@@ -195,13 +195,13 @@ public class Test extends OpMode {
         switch (pathState) {
             case 0:
                 follower.followPath(firstDo, false);
-                delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 450), 0);
-                outtake.hookAtIntake(false,false);
+
                 setPathState(1);
                 break;
             case 1:
                 follower.setMaxPower(100);
                 if(!follower.isBusy()){
+                    delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION), 0);
                     follower.followPath(sample, false);
                     setPathState(2);
                 }
@@ -322,6 +322,10 @@ public class Test extends OpMode {
 
 
 
+        asyncThread = true;
+        asyncUpdatesThread.start();
+
+
 
 
         // Initialize intake and outtake positions.
@@ -335,12 +339,6 @@ public class Test extends OpMode {
         outtake.specDropAtIntakePos(true);
         outtake.specDropOpen(false);
         verticalSlides.setPosition(0);
-        outtake.update();
-        verticalSlides.update();
-        intake.update();
-        horizontalSlides.update();
-
-
     }
 
     /** This is the main loop of the OpMode, it will run repeatedly after clicking "Play". **/
@@ -348,10 +346,6 @@ public class Test extends OpMode {
     public void loop() {
         // These loop the movements of the robot
         follower.update();
-
-
-
-
         autonomousPathUpdate();
 
         // Feedback to Driv
@@ -368,8 +362,7 @@ public class Test extends OpMode {
      * It runs all the setup actions, including building paths and starting the path system **/
     @Override
     public void start() {
-        asyncThread = true;
-        asyncUpdatesThread.start();
+        delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 50), 0);
         opmodeTimer.resetTimer();
         setPathState(0);
     }
