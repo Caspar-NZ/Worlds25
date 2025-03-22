@@ -543,7 +543,7 @@ public class teleOp extends LinearOpMode {
                 } else if ((currentGamepad1.y && !previousGamepad1.y)||(currentGamepad2.dpad_up && !previousGamepad2.dpad_up) || (currentGamepad1.right_bumper && !previousGamepad1.right_bumper) ){
                     if (readyToGoToDelivery){
                         outtake.hookAtIntake(false,false);
-                        vertSlidesTarget = vertSlide.MIN_POSITION +450;
+                        vertSlidesTarget = vertSlide.MIN_POSITION +420;
                         readyToGoToDelivery = false;
                         readyToDeliver = true;
                         sampleDelivTimer = currentTime;
