@@ -26,6 +26,11 @@ import pedroPathing.constants.LConstants;
 @Autonomous(name = "testAuto", group = "Examples")
 public class Test extends OpMode {
 
+    private horiSlides horizontalSlides;
+    private vertSlide verticalSlides;
+    private outtake outtake;
+    private intake intake;
+
 
 
 
@@ -181,6 +186,7 @@ public class Test extends OpMode {
         switch (pathState) {
             case 0:
                 follower.followPath(firstDo, false);
+                outtake.hookAtIntake(false);
                 setPathState(1);
                 break;
             case 1:
@@ -274,23 +280,23 @@ public class Test extends OpMode {
         follower.setStartingPose(startPose);
         buildPaths();
 
-        horiSlides horizontalSlides = new horiSlides(hardwareMap);
-        vertSlide verticalSlides = new vertSlide(hardwareMap);
-        outtake outtake = new outtake(hardwareMap);
-        intake intake = new intake(hardwareMap);
+        horizontalSlides = new horiSlides(hardwareMap);
+        verticalSlides = new vertSlide(hardwareMap);
+        outtake = new outtake(hardwareMap);
+        intake = new intake(hardwareMap);
 
 
 
         // Initialize intake and outtake positions.
         // Default manual configuration (right trigger): inner blocker closed, outer blocker open.
-        /*intake.setRotation(TRANSFER);
+        intake.setRotation(TRANSFER);
         intake.setInnerBlockOpen(false);
         intake.setOuterBlockOpen(true);
         horizontalSlides.setPosition(0);
         intake.update();
         horizontalSlides.update();
 
-         */
+
     }
 
     /** This is the main loop of the OpMode, it will run repeatedly after clicking "Play". **/
@@ -298,6 +304,8 @@ public class Test extends OpMode {
     public void loop() {
         // These loop the movements of the robot
         follower.update();
+
+
 
         outtake.update();
         intake.update();
