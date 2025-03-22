@@ -307,19 +307,10 @@ public class Test extends OpMode {
 
 
 
-        outtake.update();
-        intake.update();
-        horizontalSlides.update();
-        verticalSlides.update();
 
         autonomousPathUpdate();
 
-        // Feedback to Driver Hub
-        telemetry.addData("path state", pathState);
-        telemetry.addData("x", follower.getPose().getX());
-        telemetry.addData("y", follower.getPose().getY());
-        telemetry.addData("heading", follower.getPose().getHeading());
-        telemetry.update();
+        // Feedback to Driv
     }
 
 
