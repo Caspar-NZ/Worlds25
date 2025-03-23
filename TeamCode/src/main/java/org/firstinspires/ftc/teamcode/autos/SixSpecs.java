@@ -215,7 +215,7 @@ public class SixSpecs extends OpMode {
         switch(pathState) {
             case 0:
                 // This path transitions from startPose to pre1stDrop (the slowdown point before first drop).
-                timeout = y; // TODO: set appropriate timeout value for preFirstSpec
+                timeout = 0.8; // TODO: set appropriate timeout value for preFirstSpec
                 if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
                     slowdown = 1.0; // Slowdown is 1.0
                     follower.followPath(preFirstSpec, false);
