@@ -215,24 +215,20 @@ public class SixSpecs extends OpMode {
         switch(pathState) {
             case 0:
                 // This path transitions from startPose to pre1stDrop (the slowdown point before first drop).
-                timeout = 0.8; // TODO: set appropriate timeout value for preFirstSpec
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
-                    slowdown = 1.0; // Slowdown is 1.0
-                    follower.followPath(preFirstSpec, false);
-                    setPathState(pathState + 1);
-                }
+                slowdown = 1.0; // Slowdown is 1.0
+                follower.followPath(preFirstSpec, false);
+                setPathState(pathState + 1);
                 break;
             case 1:
                 // This path transitions from pre1stDrop to slow1stDrop (first drop slowdown).
-                timeout = y; // TODO: set appropriate timeout value for firstSpec
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
+                if (!follower.isBusy() || follower.getPose().getX() > 35 ) {
                     slowdown = 0.3; // Slowdown is 0.3
                     follower.followPath(firstSpec, true);
                     setPathState(pathState + 1);
                 }
                 break;
             case 2:
-                // This path transitions from slow1stDrop to firstSample (moving to first sample).
+                // This path transitions from slow1stDrop to firstSample (moving to first sample). //no timeout
                 timeout = y; // TODO: set appropriate timeout value for toFirstSample
                 if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
                     slowdown = 1.0; // Slowdown is 1.0
@@ -243,7 +239,7 @@ public class SixSpecs extends OpMode {
             case 3:
                 // This path transitions from firstSample to firstPush (pushing the first sample).
                 timeout = y; // TODO: set appropriate timeout value for pushFirstSample
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
+                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime() || follower.getPose().getY() <= 55.0) {
                     slowdown = 1.0; // Slowdown is 1.0
                     follower.followPath(pushFirstSample, false);
                     setPathState(pathState + 1);
@@ -252,7 +248,7 @@ public class SixSpecs extends OpMode {
             case 4:
                 // This path transitions from firstPush to secondSample (moving to second sample).
                 timeout = y; // TODO: set appropriate timeout value for toSecondSample
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
+                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime() || follower.getPose().getX() <= 22.0) {
                     slowdown = 1.0; // Slowdown is 1.0
                     follower.followPath(toSecondSample, false);
                     setPathState(pathState + 1);
@@ -261,7 +257,7 @@ public class SixSpecs extends OpMode {
             case 5:
                 // This path transitions from secondSample to secondPush (pushing the second sample).
                 timeout = y; // TODO: set appropriate timeout value for pushSecondSample
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
+                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime() || follower.getPose().getX() >= 33.0) {
                     slowdown = 1.0; // Slowdown is 1.0
                     follower.followPath(pushSecondSample, false);
                     setPathState(pathState + 1);
@@ -270,7 +266,8 @@ public class SixSpecs extends OpMode {
             case 6:
                 // This path transitions from secondPush to thirdSample (moving to third sample).
                 timeout = y; // TODO: set appropriate timeout value for toThirdSample
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
+                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime() ||
+                        ((follower.getPose().getX() >= 40.0 && follower.getPose().getX() <= 43.0))) {
                     slowdown = 1.0; // Slowdown is 1.0
                     follower.followPath(toThirdSample, false);
                     setPathState(pathState + 1);
@@ -279,7 +276,7 @@ public class SixSpecs extends OpMode {
             case 7:
                 // This path transitions from thirdSample to preFarPickUp (pushing the third sample).
                 timeout = y; // TODO: set appropriate timeout value for pushThirdSample
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
+                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()  || follower.getPose().getX() >= 33.0) {
                     slowdown = 1.0; // Slowdown is 1.0
                     follower.followPath(pushThirdSample, false);
                     setPathState(pathState + 1);
@@ -287,8 +284,7 @@ public class SixSpecs extends OpMode {
                 break;
             case 8:
                 // This path transitions from preFarPickUp to farPickUp (first pickup).
-                timeout = y; // TODO: set appropriate timeout value for firstPickUp
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
+                if (!follower.isBusy() || follower.getPose().getX() < 12) {
                     slowdown = 0.3; // Slowdown is 0.3
                     follower.followPath(firstPickUp, true);
                     setPathState(pathState + 1);
@@ -305,8 +301,7 @@ public class SixSpecs extends OpMode {
                 break;
             case 10:
                 // This path transitions from pre2ndDrop to slow2ndDrop (second drop slowdown).
-                timeout = y; // TODO: set appropriate timeout value for secondSpec
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
+                if (!follower.isBusy() || follower.getPose().getX() > 35) {
                     slowdown = 0.3; // Slowdown is 0.3
                     follower.followPath(secondSpec, true);
                     setPathState(pathState + 1);
@@ -323,8 +318,7 @@ public class SixSpecs extends OpMode {
                 break;
             case 12:
                 // This path transitions from preClosePickUp to closePickUp (second pickup).
-                timeout = y; // TODO: set appropriate timeout value for secondPickUp
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
+                if (!follower.isBusy() || follower.getPose().getX() < 12) {
                     slowdown = 0.3; // Slowdown is 0.3
                     follower.followPath(secondPickUp, true);
                     setPathState(pathState + 1);
@@ -341,8 +335,7 @@ public class SixSpecs extends OpMode {
                 break;
             case 14:
                 // This path transitions from pre3rdDrop to slow3rdDrop (third drop slowdown).
-                timeout = y; // TODO: set appropriate timeout value for thirdSpec
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
+                if (!follower.isBusy() || follower.getPose().getX() > 35) {
                     slowdown = 0.3; // Slowdown is 0.3
                     follower.followPath(thirdSpec, true);
                     setPathState(pathState + 1);
@@ -359,8 +352,7 @@ public class SixSpecs extends OpMode {
                 break;
             case 16:
                 // This path transitions from preClosePickUp to closePickUp (third pickup).
-                timeout = y; // TODO: set appropriate timeout value for thirdPickUp
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
+                if (!follower.isBusy() || follower.getPose().getX() < 12) {
                     slowdown = 0.3; // Slowdown is 0.3
                     follower.followPath(thirdPickUp, true);
                     setPathState(pathState + 1);
@@ -377,8 +369,7 @@ public class SixSpecs extends OpMode {
                 break;
             case 18:
                 // This path transitions from pre4thDrop to slow4thDrop (fourth drop slowdown).
-                timeout = y; // TODO: set appropriate timeout value for fourthSpec
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
+                if (!follower.isBusy() || follower.getPose().getX() > 35) {
                     slowdown = 0.3; // Slowdown is 0.3
                     follower.followPath(fourthSpec, true);
                     setPathState(pathState + 1);
@@ -395,8 +386,7 @@ public class SixSpecs extends OpMode {
                 break;
             case 20:
                 // This path transitions from preClosePickUp to closePickUp (fourth pickup).
-                timeout = y; // TODO: set appropriate timeout value for fourthPickUp
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
+                if (!follower.isBusy() || follower.getPose().getX() < 12) {
                     slowdown = 0.3; // Slowdown is 0.3
                     follower.followPath(fourthPickUp, true);
                     setPathState(pathState + 1);
@@ -413,8 +403,7 @@ public class SixSpecs extends OpMode {
                 break;
             case 22:
                 // This path transitions from pre5thDrop to slow5thDrop (fifth drop slowdown).
-                timeout = y; // TODO: set appropriate timeout value for fithSpec
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
+                if (!follower.isBusy() || follower.getPose().getX() > 35) {
                     slowdown = 0.3; // Slowdown is 0.3
                     follower.followPath(fithSpec, true);
                     setPathState(pathState + 1);
@@ -431,8 +420,7 @@ public class SixSpecs extends OpMode {
                 break;
             case 24:
                 // This path transitions from preClosePickUp to closePickUp (fifth pickup).
-                timeout = y; // TODO: set appropriate timeout value for fithPickUp
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
+                if (!follower.isBusy() || follower.getPose().getX() < 12) {
                     slowdown = 0.3; // Slowdown is 0.3
                     follower.followPath(fithPickUp, true);
                     setPathState(pathState + 1);
@@ -449,8 +437,7 @@ public class SixSpecs extends OpMode {
                 break;
             case 26:
                 // This path transitions from pre6thDrop to slow6thDrop (sixth drop slowdown).
-                timeout = y; // TODO: set appropriate timeout value for sixthSpec
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
+                if (!follower.isBusy() || follower.getPose().getX() > 35) {
                     slowdown = 0.3; // Slowdown is 0.3
                     follower.followPath(sixthSpec, true);
                     setPathState(pathState + 1);
@@ -512,8 +499,6 @@ public class SixSpecs extends OpMode {
                         verticalSlides.update();
                         outtake.update();
                         intake.update();
-                        // Uncomment the next line if you need to clear bulk cache
-                        // expansionHub.clearBulkCache();
                     }
                 } catch (Exception e) {
                     // Log or handle exception if needed
@@ -524,7 +509,7 @@ public class SixSpecs extends OpMode {
         // Create and configure the thread.
         asyncThread = true;
         asyncUpdatesThread = new Thread(asyncUpdates);
-        asyncUpdatesThread.setDaemon(true); // Optional: marks the thread as daemon.
+        asyncUpdatesThread.setDaemon(true);
         asyncUpdatesThread.start();
 
         // Initialize intake and outtake positions.
