@@ -12,7 +12,7 @@ public class horiSlides {
     // The slide range is 865 counts.
     public static int MIN_POSITION = 0;
     public static int MAX_POSITION = MIN_POSITION + 890;//865
-    private static final double DEADZONE = 0;
+    private static final double DEADZONE = 5;
     private static final double MAX_POWER = 1;
 
     private final DcMotor leftHori, rightHori;
@@ -60,7 +60,7 @@ public class horiSlides {
             MIN_POSITION = averagePosition;
         }
 
-        if ((targetPosition < averagePosition) && (targetPosition < MIN_POSITION) && (magsTriggered)) { //this means we're requesting to go down
+        if ((targetPosition < averagePosition) && (targetPosition < MIN_POSITION) && (!magsTriggered)) { //this means we're requesting to go down
             MIN_POSITION -= 10;
             targetPosition = MIN_POSITION + 1;
         }

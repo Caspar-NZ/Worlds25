@@ -56,30 +56,30 @@ public class SixSpecs extends OpMode {
     // Define all poses and paths
 
     private final Pose startPose = new Pose(7.32, 77.2, Math.toRadians(0));
-    private final Pose pre1stDrop = new Pose(35, 77.2, Math.toRadians(0));
-    private final Pose slow1stDrop = new Pose(41, 77.2, Math.toRadians(0));
+    private final Pose pre1stDrop = new Pose(36, 77.2, Math.toRadians(0));
+    private final Pose slow1stDrop = new Pose(42, 77.2, Math.toRadians(0));
     private final Pose preFirstSample = new Pose(36, 50, Math.toRadians(0));
     private final Pose firstSample = new Pose(42.2, 36, Math.toRadians(0));
     private final Pose firstPush = new Pose(16, 27, Math.toRadians(0));
-    private final Pose secondSample = new Pose(34.0, 27, Math.toRadians(0));
+    private final Pose secondSample = new Pose(34.0, 28, Math.toRadians(0));
     private final Pose preSecondPush = new Pose(43, 21.8, Math.toRadians(0));
     private final Pose secondPush = new Pose(16, 18.0, Math.toRadians(0));
-    private final Pose thirdSample = new Pose(35.0, 17.4, Math.toRadians(0));
+    private final Pose thirdSample = new Pose(35.0, 18.9, Math.toRadians(0));
     private final Pose preThirdPush = new Pose(43, 13, Math.toRadians(0));
-    private final Pose preFarPickUp = new Pose(12, 13, Math.toRadians(0));
+    private final Pose preFarPickUp = new Pose(14, 13, Math.toRadians(0));
     private final Pose farPickUp = new Pose(8, 13, Math.toRadians(0));
-    private final Pose pre2ndDrop = new Pose(34.0, 70.0, Math.toRadians(0));
-    private final Pose slow2ndDrop = new Pose(38.0, 70.0, Math.toRadians(0));
-    private final Pose preClosePickUp = new Pose(12, 47, Math.toRadians(0));
+    private final Pose pre2ndDrop = new Pose(36.0, 70.0, Math.toRadians(0));
+    private final Pose slow2ndDrop = new Pose(42, 74.0, Math.toRadians(0));
+    private final Pose preClosePickUp = new Pose(14, 51, Math.toRadians(0));
     private final Pose closePickUp = new Pose(8, 47, Math.toRadians(0));
-    private final Pose pre3rdDrop = new Pose(34.0, 70.0, Math.toRadians(0));
-    private final Pose slow3rdDrop = new Pose(38.0, 70.0, Math.toRadians(0));
-    private final Pose pre4thDrop = new Pose(34.0, 70.0, Math.toRadians(0));
-    private final Pose slow4thDrop = new Pose(38.0, 70.0, Math.toRadians(0));
-    private final Pose pre5thDrop = new Pose(34.0, 70.0, Math.toRadians(0));
-    private final Pose slow5thDrop = new Pose(38.0, 70.0, Math.toRadians(0));
-    private final Pose pre6thDrop = new Pose(34.0, 70.0, Math.toRadians(0));
-    private final Pose slow6thDrop = new Pose(38.0, 70.0, Math.toRadians(0));
+    private final Pose pre3rdDrop = new Pose(36.0, 70.0, Math.toRadians(0));
+    private final Pose slow3rdDrop = new Pose(42, 74.0, Math.toRadians(0));
+    private final Pose pre4thDrop = new Pose(36.0, 70.0, Math.toRadians(0));
+    private final Pose slow4thDrop = new Pose(42, 74.0, Math.toRadians(0));
+    private final Pose pre5thDrop = new Pose(36.0, 70.0, Math.toRadians(0));
+    private final Pose slow5thDrop = new Pose(42, 74.0, Math.toRadians(0));
+    private final Pose pre6thDrop = new Pose(36.0, 70.0, Math.toRadians(0));
+    private final Pose slow6thDrop = new Pose(42, 74.0, Math.toRadians(0));
     private final Pose parkPose = new Pose(10.0, 40.0, Math.toRadians(0));
 
 
@@ -211,251 +211,279 @@ public class SixSpecs extends OpMode {
     }
 
     public void autonomousPathUpdate() {
-        double y = 5.0;
         switch(pathState) {
+            // CASE 0: Start high-speed path from startPose to pre1stDrop.
             case 0:
-                // This path transitions from startPose to pre1stDrop (the slowdown point before first drop).
-                slowdown = 1.0; // Slowdown is 1.0
+                slowdown = 1.0;
                 follower.followPath(preFirstSpec, false);
                 setPathState(pathState + 1);
                 break;
+
+            // CASE 1: Monitor preFirstSpec.
+            // Cancel early when the robot’s X reaches 34.5.
             case 1:
-                // This path transitions from pre1stDrop to slow1stDrop (first drop slowdown).
-                if (!follower.isBusy() || follower.getPose().getX() > 35 ) {
-                    slowdown = 0.3; // Slowdown is 0.3
+                if (!follower.isBusy() || follower.getPose().getX() >= 37) {
+                    slowdown = 0.2;
                     follower.followPath(firstSpec, true);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 2: Wait for firstSpec (slow speed) to complete.
             case 2:
-                // This path transitions from slow1stDrop to firstSample (moving to first sample). //no timeout
-                timeout = y; // TODO: set appropriate timeout value for toFirstSample
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
-                    slowdown = 1.0; // Slowdown is 1.0
+                if (!follower.isBusy()) {
+                    slowdown = 1.0;
                     follower.followPath(toFirstSample, false);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 3: Monitor toFirstSample.
+            // This diagonal path (dominant Y drop) is cancelled early when Y reaches 50.
             case 3:
-                // This path transitions from firstSample to firstPush (pushing the first sample).
-                timeout = y; // TODO: set appropriate timeout value for pushFirstSample
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime() || follower.getPose().getY() <= 55.0) {
-                    slowdown = 1.0; // Slowdown is 1.0
+                if (!follower.isBusy() || (follower.getPose().getY() <= 49.4 && follower.getPose().getX() >40.8)) {
+                    slowdown = 1.0;
                     follower.followPath(pushFirstSample, false);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 4: Monitor pushFirstSample.
+            // Movement mainly along X decreasing; cancel when X ≤ 22.
             case 4:
-                // This path transitions from firstPush to secondSample (moving to second sample).
-                timeout = y; // TODO: set appropriate timeout value for toSecondSample
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime() || follower.getPose().getX() <= 22.0) {
-                    slowdown = 1.0; // Slowdown is 1.0
+                if (!follower.isBusy() || follower.getPose().getX() <= 22.0) {
+                    slowdown = 1.0;
                     follower.followPath(toSecondSample, false);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 5: Monitor toSecondSample.
+            // Movement along X increasing; cancel when X reaches about 33.
             case 5:
-                // This path transitions from secondSample to secondPush (pushing the second sample).
-                timeout = y; // TODO: set appropriate timeout value for pushSecondSample
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime() || follower.getPose().getX() >= 33.0) {
-                    slowdown = 1.0; // Slowdown is 1.0
+                if (!follower.isBusy() || (follower.getPose().getX() >= 33.0 && follower.getPose().getY() >= 23)) {
+                    slowdown = 1.0;
                     follower.followPath(pushSecondSample, false);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 6: Monitor pushSecondSample.
+            // Composite path ending near secondPush; cancel when X drops to ~20.
             case 6:
-                // This path transitions from secondPush to thirdSample (moving to third sample).
-                timeout = y; // TODO: set appropriate timeout value for toThirdSample
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime() ||
-                        ((follower.getPose().getX() >= 40.0 && follower.getPose().getX() <= 43.0))) {
-                    slowdown = 1.0; // Slowdown is 1.0
+                if (!follower.isBusy() || follower.getPose().getX() <= 20.0) {
+                    slowdown = 1.0;
                     follower.followPath(toThirdSample, false);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 7: Monitor toThirdSample.
+            // Movement along X increasing; cancel when X reaches about 33.
             case 7:
-                // This path transitions from thirdSample to preFarPickUp (pushing the third sample).
-                timeout = y; // TODO: set appropriate timeout value for pushThirdSample
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()  || follower.getPose().getX() >= 33.0) {
-                    slowdown = 1.0; // Slowdown is 1.0
+                if (!follower.isBusy() || follower.getPose().getX() >= 33.0) {
+                    slowdown = 1.0;
                     follower.followPath(pushThirdSample, false);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 8: Monitor pushThirdSample.
+            // Composite path moving from thirdSample to preFarPickUp; cancel early when X is near 15.
             case 8:
-                // This path transitions from preFarPickUp to farPickUp (first pickup).
-                if (!follower.isBusy() || follower.getPose().getX() < 12) {
-                    slowdown = 0.3; // Slowdown is 0.3
+                if (!follower.isBusy() || follower.getPose().getX() <= 14.0) {
+                    slowdown = 0.3;
                     follower.followPath(firstPickUp, true);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 9: Wait for firstPickUp (precision move) to complete.
             case 9:
-                // This path transitions from farPickUp to pre2ndDrop (preparing for second drop).
-                timeout = y; // TODO: set appropriate timeout value for preSecondSpec
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
-                    slowdown = 1.0; // Slowdown is 1.0
+                if (!follower.isBusy()) {
+                    slowdown = 1.0;
                     follower.followPath(preSecondSpec, false);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 10: Monitor preSecondSpec.
+            // Diagonal move (dominant Y increase); cancel early when Y reaches about 60.
             case 10:
-                // This path transitions from pre2ndDrop to slow2ndDrop (second drop slowdown).
-                if (!follower.isBusy() || follower.getPose().getX() > 35) {
-                    slowdown = 0.3; // Slowdown is 0.3
+                if (!follower.isBusy() || follower.getPose().getX() >= 36.0) {
+                    slowdown = 0.3;
                     follower.followPath(secondSpec, true);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 11: Wait for secondSpec (slow speed) to complete.
             case 11:
-                // This path transitions from slow2ndDrop to preClosePickUp (preparing for second pickup).
-                timeout = y; // TODO: set appropriate timeout value for preSecondPickUp
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
-                    slowdown = 1.0; // Slowdown is 1.0
+                if (!follower.isBusy()) {
+                    slowdown = 1.0;
                     follower.followPath(preSecondPickUp, false);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 12: Monitor preSecondPickUp.
+            // Diagonal move with dominant X decrease; cancel when X ≤ 22.
             case 12:
-                // This path transitions from preClosePickUp to closePickUp (second pickup).
-                if (!follower.isBusy() || follower.getPose().getX() < 12) {
-                    slowdown = 0.3; // Slowdown is 0.3
+                if (!follower.isBusy() || follower.getPose().getX() <= 14.0) {
+                    slowdown = 0.3;
                     follower.followPath(secondPickUp, true);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 13: Wait for secondPickUp (precision pickup) to complete.
             case 13:
-                // This path transitions from closePickUp to pre3rdDrop (preparing for third drop).
-                timeout = y; // TODO: set appropriate timeout value for preThirdSpec
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
-                    slowdown = 1.0; // Slowdown is 1.0
+                if (!follower.isBusy()) {
+                    slowdown = 1.0;
                     follower.followPath(preThirdSpec, false);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 14: Monitor preThirdSpec.
+            // Diagonal move (dominant X increase); cancel when X reaches about 30.
             case 14:
-                // This path transitions from pre3rdDrop to slow3rdDrop (third drop slowdown).
-                if (!follower.isBusy() || follower.getPose().getX() > 35) {
-                    slowdown = 0.3; // Slowdown is 0.3
+                if (!follower.isBusy() || follower.getPose().getX() >= 36.0) {
+                    slowdown = 0.3;
                     follower.followPath(thirdSpec, true);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 15: Wait for thirdSpec (slow speed) to complete.
             case 15:
-                // This path transitions from slow3rdDrop to preClosePickUp (preparing for third pickup).
-                timeout = y; // TODO: set appropriate timeout value for preThirdPickUp
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
-                    slowdown = 1.0; // Slowdown is 1.0
+                if (!follower.isBusy()) {
+                    slowdown = 1.0;
                     follower.followPath(preThirdPickUp, false);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 16: Monitor preThirdPickUp.
+            // Diagonal move with dominant X decrease; cancel when X ≤ 22.
             case 16:
-                // This path transitions from preClosePickUp to closePickUp (third pickup).
-                if (!follower.isBusy() || follower.getPose().getX() < 12) {
-                    slowdown = 0.3; // Slowdown is 0.3
+                if (!follower.isBusy() || follower.getPose().getX() <= 14.0) {
+                    slowdown = 0.3;
                     follower.followPath(thirdPickUp, true);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 17: Wait for thirdPickUp (precision pickup) to complete.
             case 17:
-                // This path transitions from closePickUp to pre4thDrop (preparing for fourth drop).
-                timeout = y; // TODO: set appropriate timeout value for preFourthSpec
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
-                    slowdown = 1.0; // Slowdown is 1.0
+                if (!follower.isBusy()) {
+                    slowdown = 1.0;
                     follower.followPath(preFourthSpec, false);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 18: Monitor preFourthSpec.
+            // Diagonal move (dominant X increase); cancel when X reaches about 30.
             case 18:
-                // This path transitions from pre4thDrop to slow4thDrop (fourth drop slowdown).
-                if (!follower.isBusy() || follower.getPose().getX() > 35) {
-                    slowdown = 0.3; // Slowdown is 0.3
+                if (!follower.isBusy() || follower.getPose().getX() >= 36.0) {
+                    slowdown = 0.3;
                     follower.followPath(fourthSpec, true);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 19: Wait for fourthSpec (slow speed) to complete.
             case 19:
-                // This path transitions from slow4thDrop to preClosePickUp (preparing for fourth pickup).
-                timeout = y; // TODO: set appropriate timeout value for preFourthPickUp
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
-                    slowdown = 1.0; // Slowdown is 1.0
+                if (!follower.isBusy()) {
+                    slowdown = 1.0;
                     follower.followPath(preFourthPickUp, false);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 20: Monitor preFourthPickUp.
+            // Diagonal move with dominant X decrease; cancel when X ≤ 22.
             case 20:
-                // This path transitions from preClosePickUp to closePickUp (fourth pickup).
-                if (!follower.isBusy() || follower.getPose().getX() < 12) {
-                    slowdown = 0.3; // Slowdown is 0.3
+                if (!follower.isBusy() || follower.getPose().getX() <= 14.0) {
+                    slowdown = 0.3;
                     follower.followPath(fourthPickUp, true);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 21: Wait for fourthPickUp (precision pickup) to complete.
             case 21:
-                // This path transitions from closePickUp to pre5thDrop (preparing for fifth drop).
-                timeout = y; // TODO: set appropriate timeout value for preFithSpec
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
-                    slowdown = 1.0; // Slowdown is 1.0
+                if (!follower.isBusy()) {
+                    slowdown = 1.0;
                     follower.followPath(preFithSpec, false);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 22: Monitor preFithSpec.
+            // Diagonal move (dominant X increase); cancel when X reaches about 30.
             case 22:
-                // This path transitions from pre5thDrop to slow5thDrop (fifth drop slowdown).
-                if (!follower.isBusy() || follower.getPose().getX() > 35) {
-                    slowdown = 0.3; // Slowdown is 0.3
+                if (!follower.isBusy() || follower.getPose().getX() >= 36.0) {
+                    slowdown = 0.3;
                     follower.followPath(fithSpec, true);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 23: Wait for fithSpec (slow speed) to complete.
             case 23:
-                // This path transitions from slow5thDrop to preClosePickUp (preparing for fifth pickup).
-                timeout = y; // TODO: set appropriate timeout value for preFithPickUp
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
-                    slowdown = 1.0; // Slowdown is 1.0
+                if (!follower.isBusy()) {
+                    slowdown = 1.0;
                     follower.followPath(preFithPickUp, false);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 24: Monitor preFithPickUp.
+            // This path goes from preClosePickUp (X ≈ 12) toward closePickUp (X ≈ 8).
+            // Cancel early when the robot’s X reaches 9.0 or less.
             case 24:
-                // This path transitions from preClosePickUp to closePickUp (fifth pickup).
-                if (!follower.isBusy() || follower.getPose().getX() < 12) {
-                    slowdown = 0.3; // Slowdown is 0.3
+                if (!follower.isBusy() || follower.getPose().getX() <= 14.0) {
+                    slowdown = 0.3;
                     follower.followPath(fithPickUp, true);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 25: Wait for fithPickUp (precision pickup) to complete.
             case 25:
-                // This path transitions from closePickUp to pre6thDrop (preparing for sixth drop).
-                timeout = y; // TODO: set appropriate timeout value for preSixthSpec
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
-                    slowdown = 1.0; // Slowdown is 1.0
+                if (!follower.isBusy()) {
+                    slowdown = 1.0;
                     follower.followPath(preSixthSpec, false);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 26: Monitor preSixthSpec.
+            // Diagonal move (dominant X increase); cancel when X reaches about 30.
             case 26:
-                // This path transitions from pre6thDrop to slow6thDrop (sixth drop slowdown).
-                if (!follower.isBusy() || follower.getPose().getX() > 35) {
-                    slowdown = 0.3; // Slowdown is 0.3
+                if (!follower.isBusy() || follower.getPose().getX() >= 36.0) {
+                    slowdown = 0.3;
                     follower.followPath(sixthSpec, true);
                     setPathState(pathState + 1);
                 }
                 break;
+
+            // CASE 27: Wait for sixthSpec (slow speed) to complete, then start the parking path.
             case 27:
-                // This path transitions from slow6thDrop to parkPose (parking pose).
-                timeout = y; // TODO: set appropriate timeout value for park
-                if (!follower.isBusy() || waitingTimer + timeout <= getRuntime()) {
-                    slowdown = 1.0; // Slowdown is 1.0
+                if (!follower.isBusy()) {
+                    slowdown = 1.0;
                     follower.followPath(park, false);
                     setPathState(pathState + 1);
                 }
                 break;
+
+
         }
-
-
     }
+
+
 
     public void setPathState(int pState) {
         pathState = pState;
@@ -498,7 +526,9 @@ public class SixSpecs extends OpMode {
                         horizontalSlides.update();
                         verticalSlides.update();
                         outtake.update();
-                        intake.update();
+                        //intake.update();
+                        // Uncomment the next line if you need to clear bulk cache
+                        // expansionHub.clearBulkCache();
                     }
                 } catch (Exception e) {
                     // Log or handle exception if needed
@@ -509,7 +539,7 @@ public class SixSpecs extends OpMode {
         // Create and configure the thread.
         asyncThread = true;
         asyncUpdatesThread = new Thread(asyncUpdates);
-        asyncUpdatesThread.setDaemon(true);
+        asyncUpdatesThread.setDaemon(true); // Optional: marks the thread as daemon.
         asyncUpdatesThread.start();
 
         // Initialize intake and outtake positions.
