@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@Autonomous(name = "testAuto", group = "Examples")
+@Autonomous(name = "testAutdco", group = "Examples")
 public class Test extends OpMode {
 
     private double slowdown = 1.0;
