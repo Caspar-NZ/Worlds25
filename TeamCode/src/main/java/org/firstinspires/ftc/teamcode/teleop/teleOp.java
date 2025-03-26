@@ -80,6 +80,7 @@ public class teleOp extends LinearOpMode {
     boolean doubleDoubleTarget = false;
     boolean doubleDouble = false;
     double avgLoopTime = 0;
+    boolean scoringSpecs;
 
 
 
@@ -116,8 +117,6 @@ public class teleOp extends LinearOpMode {
         intake.setRotation(TUCKED);
         intake.setInnerBlockOpen(false);
         intake.setOuterBlockOpen(true);
-        // Maintain target values continuously.
-        intake.setTarget(1, 0, 0);
 
         outtake.hookAtIntake(true,false);
         outtake.clawOpen(true);
@@ -125,6 +124,7 @@ public class teleOp extends LinearOpMode {
         outtake.specDropOpen(false);
 
         intake.setTarget(0, 1, 0);
+        scoringSpecs = true;
 
         while (!isStarted() && !isStopRequested()) {
             previousGamepad1.copy(currentGamepad1);
@@ -142,9 +142,6 @@ public class teleOp extends LinearOpMode {
                     intake.setTarget(0, 1, 0);
                     alliance = AllianceColor.RED;
                 }
-
-
-
             }
 
             // Set LED based on alliance.
@@ -205,31 +202,18 @@ public class teleOp extends LinearOpMode {
 
             doubleDoubleTarget = doubleDouble && intake.isTarget();
 
-            // setting target
-            if ((currentGamepad1.left_stick_button && !previousGamepad1.left_stick_button) ||
-                    (currentGamepad2.left_stick_button && !previousGamepad2.left_stick_button)) {
-                if (intake.target1 == TargetState.YELLOW) { // Currently active, so clear it.
-                    if (intake.target2 == TargetState.NONE) {
-                        intake.target2 = allianceTarget(alliance);  // See helper method below.
-                    }
+            if ((currentGamepad2.touchpad && !previousGamepad2.touchpad) ||
+                    (currentGamepad1.touchpad && !previousGamepad1.touchpad)) {
+                if (intake.target2 == TargetState.NONE) {
                     intake.target1 = TargetState.NONE;
+                    intake.target2 = allianceTarget(alliance);
+                    scoringSpecs = true;
                 } else {
                     intake.target1 = TargetState.YELLOW;
-                }
-            }
-
-            if ((currentGamepad1.right_stick_button && !previousGamepad1.right_stick_button) ||
-                    (currentGamepad2.right_stick_button && !previousGamepad2.right_stick_button)) {
-                if (intake.target2 == allianceTarget(alliance)) { // Compare enum version of Alliance.
-                    if (intake.target1 == TargetState.NONE) {
-                        intake.target1 = TargetState.YELLOW;
-                    }
                     intake.target2 = TargetState.NONE;
-                } else {
-                    intake.target2 = allianceTarget(alliance);
+                    scoringSpecs = false;
                 }
             }
-
 
 
             // Alternating LED display logic based on target selection.
@@ -418,10 +402,8 @@ public class teleOp extends LinearOpMode {
                 // When the slide is nearly retracted (below 25), run the intake wheels for 0.8 sec
                 // to drop the piece. Do not change the intake rotation; leave it in TRANSFER.
                 if (slidePos < (horiSlides.MIN_POSITION + 25)) {
-                    if (!outtake.dumpingYellows || detectedColor != TargetState.YELLOW) {
-                        intake.setTimedIntake(-1, -1, 0.8);
-                        sampleInBucket = true;
-                    }
+                    intake.setTimedIntake(-1, -1, 0.8);
+                    sampleInBucket = true;
                     goingHome = false;
                 }
             }
@@ -515,16 +497,10 @@ public class teleOp extends LinearOpMode {
                 verticalSlides.setPosition(vertSlidesTarget);
             }
 
-            ////////////////////Outake Yellow handling Logic ////////////////
-            if (outtake.scoringSamples){
-                if ((currentGamepad1.dpad_up && !previousGamepad1.dpad_up) || (currentGamepad2.dpad_up && !previousGamepad2.dpad_up)){
-                    outtake.hookAtIntake(true,false);
-                    vertSlidesTarget = vertSlide.MAX_POSITION;
-                }
-            }
+
 
             ////////////////////Outake Alliance handling Logic ////////////////
-            if (outtake.scoringSpecs){
+            if (scoringSpecs){
                 if ((currentGamepad1.right_bumper && !previousGamepad1.right_bumper && !specimenInClaw)){
                     if (sampleInBucket){
                         if (!outtake.BucketPositionAtIntake){
