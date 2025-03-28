@@ -29,6 +29,8 @@ public class intake {
 
     private static final double LEFT_DOWN_INTAKE    = 0.32; //0.28
     private static final double RIGHT_DOWN_INTAKE   = 0.69; //0.73
+    private static final double LEFT_AUTOPOS    = 0.22; //0.28
+    private static final double RIGHT_AUTOPOS   = 0.79; //0.73
 
     private static final double LEFT_DOWN_TUCKED    = 0.03;
     private static final double RIGHT_DOWN_TUCKED   = 0.98;
@@ -209,6 +211,12 @@ public class intake {
                 break;
         }
     }
+
+    public void setAutoPos() {
+        leftRotateTarget  = LEFT_AUTOPOS;
+        rightRotateTarget = RIGHT_AUTOPOS;
+    }
+
 
     /**
      * Set the intake speeds for a specific duration.
