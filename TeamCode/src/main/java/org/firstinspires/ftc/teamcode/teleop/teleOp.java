@@ -81,6 +81,11 @@ public class teleOp extends LinearOpMode {
     boolean doubleDouble = false;
     double avgLoopTime = 0;
     boolean scoringSpecs;
+    boolean readyToTransferYellow = false;
+    boolean transferringYellow = false;
+    double yellowTransferTime;
+    boolean yellowReadyToRelease = false;
+    int yellowProcess = 0;
 
 
 
@@ -122,6 +127,9 @@ public class teleOp extends LinearOpMode {
         outtake.clawOpen(true);
         outtake.specDropAtIntakePos(true);
         outtake.specDropOpen(false);
+
+        outtake.setSampleOutOfWay();
+        outtake.sampleReleaseOpen(false);
 
         intake.setTarget(0, 1, 0);
         scoringSpecs = true;
@@ -213,6 +221,10 @@ public class teleOp extends LinearOpMode {
                     intake.target2 = TargetState.NONE;
                     scoringSpecs = false;
                 }
+            }
+
+            if (scoringSpecs){
+                outtake.setSampleOutOfWay();
             }
 
 
@@ -373,8 +385,59 @@ public class teleOp extends LinearOpMode {
                 intake.setInnerBlockOpen(true);
                 intake.setOuterBlockOpen(true);
             }
-            if (currentGamepad2.left_bumper){
+            if (currentGamepad2.left_bumper && scoringSpecs){
                 goingHome = true;
+            }
+
+            if (currentGamepad2.left_bumper && !previousGamepad2.left_bumper &&!scoringSpecs){
+                if (yellowReadyToRelease){
+                    outtake.sampleReleaseOpen(true);
+                    yellowReadyToRelease = false;
+                } else {
+                    outtake.specDropAtIntakePos(false);
+                    transferringYellow = true;
+                    yellowTransferTime = currentTime;
+                    yellowProcess = 0;
+                }
+            }
+            if (transferringYellow){
+                switch(yellowProcess){
+                    case 0:
+                        if (yellowTransferTime + 0.2 < currentTime){
+                            outtake.sampleAtIntakePos(true);
+
+                            yellowProcess++;
+                        }
+                        break;
+                    case 1:
+                        if (yellowTransferTime + 0.5 < currentTime){
+                            horiSlidesTarget = horiSlides.MIN_POSITION + 0.1;
+                            yellowProcess++;
+                        }
+                        break;
+                    case 2:
+                        if (yellowTransferTime + 1.0 < currentTime){
+                            intake.setTimedIntake(-1, -1, 0.8);
+                            outtake.sampleReleaseOpen(false);
+                            yellowProcess++;
+                        }
+                        break;
+                    case 3:
+                        if (yellowTransferTime + 1.35 < currentTime){
+                            outtake.sampleAtIntakePos(false);
+                            yellowProcess++;
+                        }
+                        break;
+                    case 4:
+                        if (yellowTransferTime + 1.8 < currentTime){
+                            outtake.specDropAtIntakePos(true);
+                            yellowProcess++;
+                            transferringYellow = false;
+                            yellowReadyToRelease = true;
+                        }
+                        break;
+
+                }
             }
 
 
@@ -388,7 +451,11 @@ public class teleOp extends LinearOpMode {
 
                 // If the slide is extended beyond 400, command retraction to 400.
                 if (slidePos > horiSlides.MIN_POSITION + 200) {
-                    horiSlidesTarget = horiSlides.MIN_POSITION + 0.1;
+                    if (scoringSpecs) {
+                        horiSlidesTarget = horiSlides.MIN_POSITION + 0.1;
+                    } else {
+                        horiSlidesTarget = horiSlides.MIN_POSITION + 200;
+                    }
                 }
 
                 if (slidePos<(horiSlides.MIN_POSITION +700)){
@@ -397,18 +464,30 @@ public class teleOp extends LinearOpMode {
                     intake.setOuterBlockOpen(true);
                 }
                 if (slidePos < (horiSlides.MIN_POSITION + 200) && currentTime - goHomeWaitStart >= 0.4){
-                    horiSlidesTarget = horiSlides.MIN_POSITION + 0.1;
+                    if (scoringSpecs) {
+                        horiSlidesTarget = horiSlides.MIN_POSITION + 0.1;
+                    } else {
+                        horiSlidesTarget = horiSlides.MIN_POSITION + 200;
+                    }
                 }
                 // When the slide is nearly retracted (below 25), run the intake wheels for 0.8 sec
                 // to drop the piece. Do not change the intake rotation; leave it in TRANSFER.
-                if (slidePos < (horiSlides.MIN_POSITION + 25)) {
-                    intake.setTimedIntake(-1, -1, 0.8);
-                    sampleInBucket = true;
+
+                if (slidePos < (horiSlides.MIN_POSITION + 210) && !scoringSpecs) {
                     goingHome = false;
+                    readyToTransferYellow = true;
+                }
+
+                if (slidePos < (horiSlides.MIN_POSITION + 25)) {
+                    if (scoringSpecs){
+                        intake.setTimedIntake(-1, -1, 0.8);
+                        sampleInBucket = true;
+                        goingHome = false;
+                    }
                 }
             }
 
-            if (!goingHome) {
+            if (!goingHome && !transferringYellow) {
                 double horiInput = -currentGamepad2.right_stick_y;
 
                 if (Math.abs(horiInput) > JOYSTICK_DEADZONE) {

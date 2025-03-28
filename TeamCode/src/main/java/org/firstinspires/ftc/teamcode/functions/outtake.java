@@ -15,10 +15,11 @@ public class outtake {
     final private double specDropAtDelivery = 0.76;
     final private double specReleaseBlocking = 0.05;
     final private double specReleaseOpen = 0.28;
-    final private double sampleOpen = 0.5;
+    final private double sampleOpen = 0.9;
     final private double sampleClosed = 0.5;
-    final private double sampleAtIntake = 0.5;
-    final private double sampleAtDelivery = 0.5;
+    final private double sampleAtIntake = 0.45;
+    final private double sampleAtDelivery = 0.1;
+    final private double sampleOutOfWay = 0;
     public boolean isClawOpen, isSampleOpen, samplePositionAtIntake, BucketPositionAtIntake,clawAtIntake,specDropOpen;
     private double setHookPos, setClawPos, setBucketPos, setReleasePos, setSamplePos, setSampleRotatePos;
     public boolean dumpingYellows = true;
@@ -79,6 +80,9 @@ public class outtake {
             samplePositionAtIntake = false;
             setSampleRotatePos = sampleAtDelivery;
         }
+    }
+    public void setSampleOutOfWay(){
+        setSampleRotatePos = sampleOutOfWay;
     }
     public void specDropAtIntakePos(Boolean intake){
         if (intake){
