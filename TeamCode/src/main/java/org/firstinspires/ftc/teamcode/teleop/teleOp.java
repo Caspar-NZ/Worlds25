@@ -176,7 +176,6 @@ public class teleOp extends LinearOpMode {
             String rotationMode = intake.getRotationMode();
             TargetState detectedColor = intake.getDetectedColor();
 
-            double slidePos = horiSlides.MIN_POSITION + currentHoriPos;
             double rejectionSpeed = (currentGamepad2.right_trigger > currentGamepad2.left_trigger) ? 1.0 : -1.0;
 
             boolean isTucked = rotationMode.equalsIgnoreCase("TUCKED");
@@ -259,7 +258,7 @@ public class teleOp extends LinearOpMode {
 
             // ------------------- RIGHT BUMPER TO TOGGLE INTAKE DEPLOYMENT -------------------
             if (currentGamepad2.right_bumper && !previousGamepad2.right_bumper) {
-                if (currentHoriPos > horiSlides.MIN_POSITION + 60) {
+                if (currentHoriPos > 60) {
                     if (isTucked) {
                         intake.setRotation(INTAKE);
                         intake.setTimedIntake(-1, -1, 0.4);
@@ -286,7 +285,7 @@ public class teleOp extends LinearOpMode {
                         }
                     }
                 } else {
-                    horiSlidesTarget = horiSlides.MIN_POSITION + 60;
+                    horiSlidesTarget = 60;
                 }
             }
             if (currentGamepad2.dpad_up && !previousGamepad2.dpad_up){
@@ -392,7 +391,7 @@ public class teleOp extends LinearOpMode {
                         break;
                     case 1:
                         if (yellowTransferTime + 0.5 < currentTime){
-                            horiSlidesTarget = horiSlides.MIN_POSITION + 0.1;
+                            horiSlidesTarget = 0.1;
                             yellowProcess++;
                         }
                         break;
@@ -426,30 +425,30 @@ public class teleOp extends LinearOpMode {
                 outtake.specDropAtIntakePos(true);
                 outtake.specDropOpen(false);
 
-                if (slidePos > horiSlides.MIN_POSITION + 200) {
+                if (currentHoriPos > 200) {
                     if (scoringSpecs) {
-                        horiSlidesTarget = horiSlides.MIN_POSITION + 0.1;
+                        horiSlidesTarget = 0.1;
                     } else {
-                        horiSlidesTarget = horiSlides.MIN_POSITION + 200;
+                        horiSlidesTarget = 200;
                     }
                 }
 
-                if (slidePos < (horiSlides.MIN_POSITION + 700)) {
+                if (currentHoriPos < 700) {
                     intake.setRotation(TRANSFER);
                     intake.setOuterBlockOpen(true);
                 }
-                if (slidePos < (horiSlides.MIN_POSITION + 200) && currentTime - goHomeWaitStart >= 0.4) {
+                if (currentHoriPos < 200 && currentTime - goHomeWaitStart >= 0.4) {
                     if (scoringSpecs) {
-                        horiSlidesTarget = horiSlides.MIN_POSITION + 0.1;
+                        horiSlidesTarget = 0.1;
                     } else {
-                        horiSlidesTarget = horiSlides.MIN_POSITION + 200;
+                        horiSlidesTarget = 200;
                     }
                 }
-                if (slidePos < (horiSlides.MIN_POSITION + 210) && !scoringSpecs) {
+                if (currentHoriPos < 210 && !scoringSpecs) {
                     goingHome = false;
                     readyToTransferYellow = true;
                 }
-                if (slidePos < (horiSlides.MIN_POSITION + 25)) {
+                if (currentHoriPos < 25) {
                     if (scoringSpecs){
                         intake.setTimedIntake(-1, -1, 0.8);
                         sampleInBucket = true;
@@ -466,7 +465,7 @@ public class teleOp extends LinearOpMode {
                     }
                     if (rotationMode.equalsIgnoreCase("INTAKE")) {
                         horiSlidesTarget = currentHoriPos + (horiInput * MAX_INPUT_SCALING);
-                        horiSlidesTarget = Math.max(horiSlidesTarget, horiSlides.MIN_POSITION + 80);
+                        horiSlidesTarget = Math.max(horiSlidesTarget, 80);
                     } else {
                         horiSlidesTarget = currentHoriPos + (horiInput * MAX_INPUT_SCALING);
                     }

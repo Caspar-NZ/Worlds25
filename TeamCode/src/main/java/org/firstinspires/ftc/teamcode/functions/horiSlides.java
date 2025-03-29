@@ -10,8 +10,8 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 public class horiSlides {
 
     // The slide range is 865 counts.
-    public static int MIN_POSITION = 0;
-    public static int MAX_POSITION = MIN_POSITION + 890;//865
+    public double MIN_POSITION = 0;
+    public double MAX_POSITION = 0;
     private static final double DEADZONE = 5;
     private static final double MAX_POWER = 1;
 
@@ -48,7 +48,7 @@ public class horiSlides {
     }
 
     public void setPosition(double position) {
-        targetPosition = position;
+        targetPosition =  MIN_POSITION + position;
     }
 
     public void update() {
@@ -65,7 +65,7 @@ public class horiSlides {
             targetPosition = MIN_POSITION + 1;
         }
 
-        MAX_POSITION = MIN_POSITION + 800;
+        MAX_POSITION = MIN_POSITION + 890;
 
 
         if (targetPosition > MAX_POSITION){
@@ -77,7 +77,8 @@ public class horiSlides {
         }
 
 
-        if ((Math.abs(averagePosition - targetPosition) < DEADZONE) || targetPosition <= MIN_POSITION) {
+
+        if ((Math.abs(averagePosition - targetPosition) < DEADZONE) || targetPosition < MIN_POSITION) {
             Power = 0;
             leftHori.setPower(0);
             rightHori.setPower(0);
@@ -103,6 +104,6 @@ public class horiSlides {
         return leftMag.isPressed() || rightMag.isPressed();
     }
     public double getCurrentPosition() {
-        return (leftHori.getCurrentPosition() + rightHori.getCurrentPosition()) / 2.0;
+        return ((leftHori.getCurrentPosition() - MIN_POSITION) + (rightHori.getCurrentPosition() - MIN_POSITION)) / 2.0;
     }
 }
