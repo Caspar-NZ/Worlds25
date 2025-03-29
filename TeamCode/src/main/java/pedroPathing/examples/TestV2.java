@@ -11,6 +11,7 @@ import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.functions.horiSlides;
@@ -26,6 +27,7 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @Autonomous(name = "testAutjghvhjo", group = "Examples")
+@Disabled
 public class TestV2 extends OpMode {
 
     private double slowdown = 1.0;

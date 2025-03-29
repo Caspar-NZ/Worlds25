@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.teleop;
 
 import android.graphics.Color;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -16,6 +17,7 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
  * 4. Adjust your conditions and samples, then use the telemetry data for calibration.
  */
 @TeleOp(name = "ZZColourCalibration", group = "Calibration")
+@Disabled
 public class ZZColourCalibration extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {

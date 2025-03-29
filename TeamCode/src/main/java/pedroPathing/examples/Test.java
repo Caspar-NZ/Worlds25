@@ -14,6 +14,7 @@ import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.functions.horiSlides;
 import org.firstinspires.ftc.teamcode.functions.outtake;
@@ -29,6 +30,7 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @Autonomous(name = "testAutdco", group = "Examples")
+@Disabled
 public class Test extends OpMode {
 
     private double slowdown = 1.0;

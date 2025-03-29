@@ -19,6 +19,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import org.firstinspires.ftc.teamcode.functions.AllianceColour;
+import org.firstinspires.ftc.teamcode.functions.AllianceInfo;
 import org.firstinspires.ftc.teamcode.functions.TargetState;
 import org.firstinspires.ftc.teamcode.functions.horiSlides;
 import org.firstinspires.ftc.teamcode.functions.outtake;
@@ -35,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@Autonomous(name = "SixSpecs", group = "Worlds")
+@Autonomous(name = "SixSpecs", group = "Worlds", preselectTeleOp="TeleOp")
 public class SixSpecs extends OpMode {
     Gamepad currentGamepad1 = new Gamepad();
     Gamepad currentGamepad2 = new Gamepad();
@@ -47,11 +49,6 @@ public class SixSpecs extends OpMode {
 
     // Go Home (target delivery) state variables
     private boolean goingHome = false;
-    public enum AllianceColor {
-        RED,
-        BLUE
-    }
-    public AllianceColor alliance = AllianceColor.RED;
 
     private double slowdown = 1.0;
 
@@ -699,70 +696,7 @@ public class SixSpecs extends OpMode {
     @Override
     public void init() {
         // If any old threads or scheduler exist, shut them down to avoid duplicate threads.
-        boolean setSample = true;
-        while (setSample){
-            // Can add code to update telemetry or diagnostics here if needed.
-            previousGamepad1.copy(currentGamepad1);
-            previousGamepad2.copy(currentGamepad2);
-            currentGamepad1.copy(gamepad1);
-            currentGamepad2.copy(gamepad2);
 
-            // Toggle alliance on touchpad press.
-            if ((currentGamepad2.touchpad && !previousGamepad2.touchpad) ||
-                    (currentGamepad1.touchpad && !previousGamepad1.touchpad)) {
-                if (intake.target2 == TargetState.RED) {
-                    intake.setTarget(0, 0, 1);
-                    alliance = AllianceColor.BLUE;
-                } else {
-                    intake.setTarget(0, 1, 0);
-                    alliance = AllianceColor.RED;
-                }
-            }
-            // Increase xOffset (dpad up) if not exceeding 20
-            if ((currentGamepad1.dpad_up && !previousGamepad1.dpad_up) ||
-                    (currentGamepad2.dpad_up && !previousGamepad2.dpad_up)) {
-                if (xOffset < 20) {
-                    xOffset += 0.5;
-                }
-            }
-
-            // Decrease xOffset (dpad down) if not below 0
-            if ((currentGamepad1.dpad_down && !previousGamepad1.dpad_down) ||
-                    (currentGamepad2.dpad_down && !previousGamepad2.dpad_down)) {
-                if (xOffset > 0) {
-                    xOffset -= 0.5;
-                }
-            }
-
-            // Increase yOffset (dpad right) if not exceeding +4
-            if ((currentGamepad1.dpad_right && !previousGamepad1.dpad_right) ||
-                    (currentGamepad2.dpad_right && !previousGamepad2.dpad_right)) {
-                if (yOffset < 4) {
-                    yOffset += 0.5;
-                }
-            }
-
-
-
-            // Decrease yOffset (dpad left) if not below -4
-            if ((currentGamepad1.dpad_left && !previousGamepad1.dpad_left) ||
-                    (currentGamepad2.dpad_left && !previousGamepad2.dpad_left)) {
-                if (yOffset > -4) {
-                    yOffset -= 0.5;
-                }
-            }
-
-            slideTarget = 70 + (xOffset * 30);
-
-            telemetry.addData("yOffset", yOffset);
-            telemetry.addData("xOffset", xOffset);
-            telemetry.addData("Alliance", alliance.toString());
-            telemetry.update();
-
-            if((currentGamepad1.a && !previousGamepad1.a)||(currentGamepad2.a && !previousGamepad2.a)){
-                setSample=false;
-            }
-        }
 
         if (scheduler != null && !scheduler.isShutdown()) {
             scheduler.shutdownNow();
@@ -800,7 +734,7 @@ public class SixSpecs extends OpMode {
         outtake.specDropOpen(false);
         verticalSlides.setPosition(0);
 
-
+        AllianceInfo.alliance = AllianceColour.RED;
         intake.setTarget(0, 1, 0);
         horizontalSlides.update();
         verticalSlides.update();
@@ -821,6 +755,64 @@ public class SixSpecs extends OpMode {
 
     @Override
     public void init_loop() {
+        previousGamepad1.copy(currentGamepad1);
+        previousGamepad2.copy(currentGamepad2);
+        currentGamepad1.copy(gamepad1);
+        currentGamepad2.copy(gamepad2);
+
+        // Toggle alliance on touchpad press.
+        if ((currentGamepad2.touchpad && !previousGamepad2.touchpad) ||
+                (currentGamepad1.touchpad && !previousGamepad1.touchpad)) {
+            if (AllianceInfo.alliance == AllianceColour.RED) {
+                // Switch from RED to BLUE.
+                intake.setTarget(0, 0, 1);  // Update target if needed.
+                AllianceInfo.alliance = AllianceColour.BLUE;
+            } else {
+                // Switch from BLUE to RED.
+                intake.setTarget(0, 1, 0);  // Update target if needed.
+                AllianceInfo.alliance = AllianceColour.RED;
+            }
+        }
+        // Increase xOffset (dpad up) if not exceeding 20
+        if ((currentGamepad1.dpad_up && !previousGamepad1.dpad_up) ||
+                (currentGamepad2.dpad_up && !previousGamepad2.dpad_up)) {
+            if (xOffset < 20) {
+                xOffset += 0.5;
+            }
+        }
+
+        // Decrease xOffset (dpad down) if not below 0
+        if ((currentGamepad1.dpad_down && !previousGamepad1.dpad_down) ||
+                (currentGamepad2.dpad_down && !previousGamepad2.dpad_down)) {
+            if (xOffset > 0) {
+                xOffset -= 0.5;
+            }
+        }
+
+        // Increase yOffset (dpad right) if not exceeding +4
+        if ((currentGamepad1.dpad_right && !previousGamepad1.dpad_right) ||
+                (currentGamepad2.dpad_right && !previousGamepad2.dpad_right)) {
+            if (yOffset < 4) {
+                yOffset += 0.5;
+            }
+        }
+
+
+
+        // Decrease yOffset (dpad left) if not below -4
+        if ((currentGamepad1.dpad_left && !previousGamepad1.dpad_left) ||
+                (currentGamepad2.dpad_left && !previousGamepad2.dpad_left)) {
+            if (yOffset > -4) {
+                yOffset -= 0.5;
+            }
+        }
+
+        slideTarget = 70 + (xOffset * 30);
+
+        telemetry.addData("yOffset", yOffset);
+        telemetry.addData("xOffset", xOffset);
+        telemetry.addData("Alliance", AllianceInfo.alliance.toString());
+        telemetry.update();
 
     }
 

@@ -17,14 +17,17 @@ import org.firstinspires.ftc.teamcode.functions.horiSlides;
 import org.firstinspires.ftc.teamcode.functions.outtake;
 import org.firstinspires.ftc.teamcode.functions.intake;
 import org.firstinspires.ftc.teamcode.functions.vertSlide;
+// Import shared alliance colour information
+import org.firstinspires.ftc.teamcode.functions.AllianceInfo;
+import org.firstinspires.ftc.teamcode.functions.AllianceColour;
 
-@TeleOp
+@TeleOp (name="TeleOp", group="Worlds")
 public class teleOp extends LinearOpMode {
 
     private static final double MAX_INPUT_SCALING = 200;
     private static final double JOYSTICK_DEADZONE = 0.05;
 
-    // Slide target position (now fixed numbers: 400, 200, 0, etc.)
+    // Slide target positions
     private double horiSlidesTarget = 0;
     private double vertSlidesTarget = 0;
 
@@ -48,7 +51,6 @@ public class teleOp extends LinearOpMode {
     private double specBucketRunTimer = 0.0;
     private boolean specRunTimeRunning = false;
 
-
     public boolean specimenInClaw;
     public boolean deliveringSpecimen = false;
     public double specimenDelivTimer;
@@ -68,12 +70,7 @@ public class teleOp extends LinearOpMode {
     int loopCount = 0;
     double highestLoopTime = 0.0;
     double lowestLoopTime = 1.0;
-    public enum AllianceColor {
-        RED,
-        BLUE
-    }
-    private AllianceColor alliance = AllianceColor.RED;
-
+    // Removed local alliance enum and variable, now using AllianceInfo
 
     private int i = 0;
 
@@ -86,8 +83,6 @@ public class teleOp extends LinearOpMode {
     double yellowTransferTime;
     boolean yellowReadyToRelease = false;
     int yellowProcess = 0;
-
-
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -118,22 +113,35 @@ public class teleOp extends LinearOpMode {
         intake intake = new intake(hardwareMap);
 
         // Initialize intake and outtake positions.
-        // Default manual configuration (right trigger): inner blocker closed, outer blocker open.
         intake.setRotation(TUCKED);
         intake.setInnerBlockOpen(false);
         intake.setOuterBlockOpen(true);
 
-        outtake.hookAtIntake(true,false);
+        outtake.hookAtIntake(true, false);
         outtake.clawOpen(true);
         outtake.specDropAtIntakePos(true);
         outtake.specDropOpen(false);
-
         outtake.setSampleOutOfWay();
         outtake.sampleReleaseOpen(false);
 
+        // Start with alliance set to RED via shared variable.
         intake.setTarget(0, 1, 0);
+        if (AllianceInfo.alliance == AllianceColour.RED) {
+            intake.setTarget(0, 1, 0);
+        } else {
+            intake.setTarget(0, 0, 1);
+        }
         scoringSpecs = true;
 
+        Gamepad.RumbleEffect effect = new Gamepad.RumbleEffect.Builder()
+                .addStep(0.0, 1.0, 500)  //  Rumble right motor 100% for 500 mSec
+                .addStep(0.0, 0.0, 300)  //  Pause for 300 mSec
+                .addStep(1.0, 0.0, 250)  //  Rumble left motor 100% for 250 mSec
+                .addStep(0.0, 0.0, 250)  //  Pause for 250 mSec
+                .addStep(1.0, 0.0, 250)  //  Rumble left motor 100% for 250 mSec
+                .build();
+
+        // Pre-start loop: update alliance info and LED indicator.
         while (!isStarted() && !isStopRequested()) {
             previousGamepad1.copy(currentGamepad1);
             previousGamepad2.copy(currentGamepad2);
@@ -143,21 +151,22 @@ public class teleOp extends LinearOpMode {
             // Toggle alliance on touchpad press.
             if ((currentGamepad2.touchpad && !previousGamepad2.touchpad) ||
                     (currentGamepad1.touchpad && !previousGamepad1.touchpad)) {
-                if (intake.target2 == TargetState.RED) {
-                    intake.setTarget(0, 0, 1);
-                    alliance = AllianceColor.BLUE;
+                if (AllianceInfo.alliance == AllianceColour.RED) {
+                    // Switch from RED to BLUE.
+                    intake.setTarget(0, 0, 1);  // Update target if needed.
+                    AllianceInfo.alliance = AllianceColour.BLUE;
                 } else {
-                    intake.setTarget(0, 1, 0);
-                    alliance = AllianceColor.RED;
+                    // Switch from BLUE to RED.
+                    intake.setTarget(0, 1, 0);  // Update target if needed.
+                    AllianceInfo.alliance = AllianceColour.RED;
                 }
             }
 
             // Set LED based on alliance.
             int[] color = getAllianceColorForEnum(intake.target2);
-
             setGamepadLedColor(color[0], color[1], color[2]);
 
-            telemetry.addData("Alliance", alliance.toString());
+            telemetry.addData("Alliance", AllianceInfo.alliance.toString());
             telemetry.update();
         }
 
@@ -174,17 +183,10 @@ public class teleOp extends LinearOpMode {
             boolean isTransfer = rotationMode.equalsIgnoreCase("TRANSFER");
             boolean isIntake = rotationMode.equalsIgnoreCase("INTAKE");
 
-
-
             double currentTime = getRuntime();
 
             if (loopCount > 0) {
                 double loopTime = currentTime - previousStartTime;
-
-                //loopTimeSum += loopTime;
-                //loopCount++;
-                //avgLoopTime = loopTimeSum / loopCount;
-
                 if (loopTime > highestLoopTime) {
                     highestLoopTime = loopTime;
                 }
@@ -194,9 +196,7 @@ public class teleOp extends LinearOpMode {
             } else {
                 loopCount++;
             }
-
             previousStartTime = currentTime;
-
 
             previousGamepad1.copy(currentGamepad1);
             previousGamepad2.copy(currentGamepad2);
@@ -207,14 +207,15 @@ public class teleOp extends LinearOpMode {
             thisIntake = detectedColor;
 
             doubleDouble = Objects.equals(previousIntake, thisIntake);
-
             doubleDoubleTarget = doubleDouble && intake.isTarget();
 
+            // Toggle alliance targets using shared alliance info.
             if ((currentGamepad2.touchpad && !previousGamepad2.touchpad) ||
                     (currentGamepad1.touchpad && !previousGamepad1.touchpad)) {
+                TargetState allianceTargetState = allianceTarget(AllianceInfo.alliance);
                 if (intake.target2 == TargetState.NONE) {
                     intake.target1 = TargetState.NONE;
-                    intake.target2 = allianceTarget(alliance);
+                    intake.target2 = allianceTargetState;
                     scoringSpecs = true;
                 } else {
                     intake.target1 = TargetState.YELLOW;
@@ -223,14 +224,8 @@ public class teleOp extends LinearOpMode {
                 }
             }
 
-            if (scoringSpecs){
-                outtake.setSampleOutOfWay();
-            }
-
-
-            // Alternating LED display logic based on target selection.
+            // Set LED based on target selection.
             if (intake.target1 == TargetState.YELLOW && intake.target2 != TargetState.NONE) {
-                // Blink: first half shows alliance color, second half shows yellow.
                 if (i < 50) {
                     int[] allianceColor = getAllianceColorForEnum(intake.target2);
                     setGamepadLedColor(allianceColor[0], allianceColor[1], allianceColor[2]);
@@ -245,14 +240,12 @@ public class teleOp extends LinearOpMode {
                 setGamepadLedColor(allianceColor[0], allianceColor[1], allianceColor[2]);
             }
 
-
-
             // ------------------- DRIVE CONTROL -------------------
             double y  = -currentGamepad1.left_stick_y;
             double x  = currentGamepad1.left_stick_x * 1.1;
             double rx = currentGamepad1.right_stick_x;
-            if (Math.abs(rx)<0.8){
-                rx= rx*0.7;
+            if (Math.abs(rx) < 0.8) {
+                rx = rx * 0.7;
             }
             double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
             double leftFrontPower  = (y + x + rx) / denominator;
@@ -266,15 +259,13 @@ public class teleOp extends LinearOpMode {
 
             // ------------------- RIGHT BUMPER TO TOGGLE INTAKE DEPLOYMENT -------------------
             if (currentGamepad2.right_bumper && !previousGamepad2.right_bumper) {
-                if (currentHoriPos> horiSlides.MIN_POSITION +60) {
-
+                if (currentHoriPos > horiSlides.MIN_POSITION + 60) {
                     if (isTucked) {
                         intake.setRotation(INTAKE);
                         intake.setTimedIntake(-1, -1, 0.4);
                         intake.setInnerBlockOpen(true);
                         intake.setOuterBlockOpen(true);
                     } else {
-                        // If already deployed, then if nothing is detected, tuck the intake.
                         if (detectedColor == TargetState.NONE) {
                             if (isTransfer) {
                                 intake.setRotation(INTAKE);
@@ -285,13 +276,11 @@ public class teleOp extends LinearOpMode {
                                 intake.setRotation(TUCKED);
                             }
                         } else {
-                            // Otherwise, toggle between INTAKE and TRANSFER.
                             if (isIntake) {
                                 intake.setRotation(TRANSFER);
                             } else {
                                 intake.setRotation(INTAKE);
                             }
-                            // Keep both blockers open while a piece is present.
                             intake.setInnerBlockOpen(true);
                             intake.setOuterBlockOpen(true);
                         }
@@ -299,7 +288,6 @@ public class teleOp extends LinearOpMode {
                 } else {
                     horiSlidesTarget = horiSlides.MIN_POSITION + 60;
                 }
-
             }
             if (currentGamepad2.dpad_up && !previousGamepad2.dpad_up){
                 intake.setInnerBlockOpen(true);
@@ -312,29 +300,25 @@ public class teleOp extends LinearOpMode {
                 intake.setRotation(TUCKED);
             }
 
-            // ------------------- MAIN INTAKE LOGIC (when not in goHome sequence) -------------------
+            // ------------------- MAIN INTAKE LOGIC -------------------
             if (!goingHome && rotationMode.equalsIgnoreCase("INTAKE")) {
                 if (detectedColor != TargetState.NONE && detectedColor != TargetState.MIXED && doubleDouble) {
                     if (doubleDoubleTarget) {
-                        // TARGET PIECE: Stop intake immediately and start goHome sequence.
                         intake.setSpeed(0, 0);
                         goingHome = true;
                         goHomeWaitStart = currentTime;
                         rejecting = false;
+                        gamepad2.runRumbleEffect(effect);
+                        gamepad1.runRumbleEffect(effect);
                     } else {
-                        // NON-TARGET: Reject it.
-                        // Force both blockers open so the piece passes through.
                         intake.setInnerBlockOpen(true);
                         intake.setOuterBlockOpen(true);
-                        // Use full-speed rejection (in the same direction as the manual command).
                         intake.setSpeed(rejectionSpeed, rejectionSpeed);
                         rejecting = true;
                         rejectionEndTime = currentTime;
                     }
                 } else {
-                    // No piece detected.
                     if (rejecting) {
-                        // Wait 0.2 sec after the piece disappears before restoring manual control.
                         if (currentTime - rejectionEndTime >= 0.05) {
                             if (currentGamepad2.right_trigger > 0.1) {
                                 intake.setInnerBlockOpen(false);
@@ -347,8 +331,7 @@ public class teleOp extends LinearOpMode {
                         } else {
                             intake.setSpeed(rejectionSpeed, rejectionSpeed);
                         }
-                    }else {
-                        // NORMAL MANUAL INTAKE CONTROL.
+                    } else {
                         double intakeSpeed;
                         if (currentGamepad2.right_trigger > 0.1) {
                             intake.setInnerBlockOpen(false);
@@ -371,7 +354,6 @@ public class teleOp extends LinearOpMode {
                         } else {
                             intake.setSpeed(0, 0);
                         }
-
                     }
                 }
             }
@@ -389,7 +371,7 @@ public class teleOp extends LinearOpMode {
                 goingHome = true;
             }
 
-            if (currentGamepad2.left_bumper && !previousGamepad2.left_bumper &&!scoringSpecs){
+            if (currentGamepad2.left_bumper && !previousGamepad2.left_bumper && !scoringSpecs){
                 if (yellowReadyToRelease){
                     outtake.sampleReleaseOpen(true);
                     yellowReadyToRelease = false;
@@ -405,7 +387,6 @@ public class teleOp extends LinearOpMode {
                     case 0:
                         if (yellowTransferTime + 0.2 < currentTime){
                             outtake.sampleAtIntakePos(true);
-
                             yellowProcess++;
                         }
                         break;
@@ -436,20 +417,15 @@ public class teleOp extends LinearOpMode {
                             yellowReadyToRelease = true;
                         }
                         break;
-
                 }
             }
 
-
-
             // ------------------- GO HOME (TARGET DELIVERY) SEQUENCE -------------------
             if (goingHome) {
-                // Stop the intake.
                 intake.setSpeed(0, 0);
                 outtake.specDropAtIntakePos(true);
                 outtake.specDropOpen(false);
 
-                // If the slide is extended beyond 400, command retraction to 400.
                 if (slidePos > horiSlides.MIN_POSITION + 200) {
                     if (scoringSpecs) {
                         horiSlidesTarget = horiSlides.MIN_POSITION + 0.1;
@@ -458,26 +434,21 @@ public class teleOp extends LinearOpMode {
                     }
                 }
 
-                if (slidePos<(horiSlides.MIN_POSITION +700)){
+                if (slidePos < (horiSlides.MIN_POSITION + 700)) {
                     intake.setRotation(TRANSFER);
-                    //intake.setInnerBlockOpen(true);
                     intake.setOuterBlockOpen(true);
                 }
-                if (slidePos < (horiSlides.MIN_POSITION + 200) && currentTime - goHomeWaitStart >= 0.4){
+                if (slidePos < (horiSlides.MIN_POSITION + 200) && currentTime - goHomeWaitStart >= 0.4) {
                     if (scoringSpecs) {
                         horiSlidesTarget = horiSlides.MIN_POSITION + 0.1;
                     } else {
                         horiSlidesTarget = horiSlides.MIN_POSITION + 200;
                     }
                 }
-                // When the slide is nearly retracted (below 25), run the intake wheels for 0.8 sec
-                // to drop the piece. Do not change the intake rotation; leave it in TRANSFER.
-
                 if (slidePos < (horiSlides.MIN_POSITION + 210) && !scoringSpecs) {
                     goingHome = false;
                     readyToTransferYellow = true;
                 }
-
                 if (slidePos < (horiSlides.MIN_POSITION + 25)) {
                     if (scoringSpecs){
                         intake.setTimedIntake(-1, -1, 0.8);
@@ -489,7 +460,6 @@ public class teleOp extends LinearOpMode {
 
             if (!goingHome && !transferringYellow) {
                 double horiInput = -currentGamepad2.right_stick_y;
-
                 if (Math.abs(horiInput) > JOYSTICK_DEADZONE) {
                     if (Math.abs(horiInput) < 0.8){
                         horiInput = horiInput * 0.10;
@@ -500,17 +470,14 @@ public class teleOp extends LinearOpMode {
                     } else {
                         horiSlidesTarget = currentHoriPos + (horiInput * MAX_INPUT_SCALING);
                     }
-
                 } else {
                     horiSlidesTarget = currentHoriPos;
                 }
-
             }
 
             horizontalSlides.setPosition(horiSlidesTarget);
 
-
-            if (specRunTimeRunning && specBucketRunTimer +0.6 < currentTime){
+            if (specRunTimeRunning && specBucketRunTimer + 0.6 < currentTime){
                 outtake.specDropAtIntakePos(true);
                 outtake.specDropOpen(false);
                 specRunTimeRunning = false;
@@ -535,79 +502,64 @@ public class teleOp extends LinearOpMode {
                 }
             }
 
-
-
             // ------------------- MANUAL VERTICAL SLIDE CONTROL -------------------
-
-
-
-
-            ////////////////////////////// Outtake controls ///////////////////////////////////
-            boolean vertSlideIsRunningToPos = (!(Math.abs(currentGamepad2.left_stick_y) > 0.02)) && (!(Math.abs(currentGamepad1.left_trigger) > 0.02)) && (!(Math.abs(currentGamepad1.right_trigger) > 0.02));
+            boolean vertSlideIsRunningToPos = (!(Math.abs(currentGamepad2.left_stick_y) > 0.02)) &&
+                    (!(Math.abs(currentGamepad1.left_trigger) > 0.02)) &&
+                    (!(Math.abs(currentGamepad1.right_trigger) > 0.02));
             if (vertSlideIsRunningToPos){
                 verticalSlides.setPosition(vertSlidesTarget);
             } else{
-                /////vert manual control
                 double currentVertPos = verticalSlides.getCurrentPosition();
-                // Read the raw input values
                 double leftTrigger  = currentGamepad1.left_trigger;
                 double rightTrigger = currentGamepad1.right_trigger;
                 double leftStick    = currentGamepad2.left_stick_y;
-
                 double stickVal;
                 if (Math.abs(leftTrigger) >= Math.abs(rightTrigger) && Math.abs(leftTrigger) >= Math.abs(leftStick)) {
-                    // If left trigger is highest, invert its value
-                    stickVal = -leftTrigger*0.2;
+                    stickVal = -leftTrigger * 0.2;
                 } else if (Math.abs(rightTrigger) >= Math.abs(leftTrigger) && Math.abs(rightTrigger) >= Math.abs(leftStick)) {
-                    // If right trigger is highest, use it as is
-                    stickVal = rightTrigger*0.08;
+                    stickVal = rightTrigger * 0.08;
                 } else {
-                    // Otherwise, use the left stick value
                     if (Math.abs(leftStick) < 0.6){
                         stickVal = leftStick * 0.5;
                     } else {
                         stickVal = leftStick;
                     }
                 }
-
                 if (Math.abs(stickVal) > JOYSTICK_DEADZONE) {
                     vertSlidesTarget = currentVertPos + (-stickVal * MAX_INPUT_SCALING);
                 }
                 verticalSlides.setPosition(vertSlidesTarget);
             }
 
-
-
-            ////////////////////Outake Alliance handling Logic ////////////////
-            if (scoringSpecs){
-                if ((currentGamepad1.right_bumper && !previousGamepad1.right_bumper && !specimenInClaw)){
-                    if (sampleInBucket){
-                        if (!outtake.BucketPositionAtIntake){
-                            outtake.specDropOpen(true);
-                            specBucketRunTimer = currentTime;
-                            specRunTimeRunning = true;
-                        } else {
-                            outtake.specDropAtIntakePos(false);
-                        }
+            ////////////////// Outtake Alliance Handling //////////////////
+            if (scoringSpecs) {
+                if ((currentGamepad1.right_bumper && !previousGamepad1.right_bumper && !specimenInClaw)) {
+                    if (sampleInBucket) {
+                        outtake.specDropOpen(true);
+                        outtake.specDropAtIntakePos(false);
+                        specBucketRunTimer = currentTime + 0.6;
+                        specRunTimeRunning = true;
                     }
                     outtake.clawOpen(false);
                     specimenInClaw = true;
-                    vertSlidesTarget = vertSlide.MIN_POSITION +150;
+                    vertSlidesTarget = vertSlide.MIN_POSITION + 150;
                     readyToGoToDelivery = true;
                     specTiming = currentTime;
-                } else if ((currentGamepad1.y && !previousGamepad1.y)||(currentGamepad2.dpad_up && !previousGamepad2.dpad_up) || (currentGamepad1.right_bumper && !previousGamepad1.right_bumper) ){
-                    if (readyToGoToDelivery){
-                        outtake.hookAtIntake(false,false);
-                        vertSlidesTarget = vertSlide.MIN_POSITION +435;
+                } else if ((currentGamepad1.y && !previousGamepad1.y) ||
+                        (currentGamepad2.dpad_up && !previousGamepad2.dpad_up) ||
+                        (currentGamepad1.right_bumper && !previousGamepad1.right_bumper)) {
+                    if (readyToGoToDelivery) {
+                        outtake.hookAtIntake(false, false);
+                        vertSlidesTarget = vertSlide.MIN_POSITION + 435;
                         readyToGoToDelivery = false;
                         readyToDeliver = true;
                         sampleDelivTimer = currentTime;
-                    } else if (readyToDeliver && sampleDelivTimer + 1.0 < currentTime){
-                        vertSlidesTarget = vertSlide.MIN_POSITION +650;
+                    } else if (readyToDeliver && sampleDelivTimer + 1.0 < currentTime) {
+                        vertSlidesTarget = vertSlide.MIN_POSITION + 650;
                         deliveringSpecimen = true;
                         readyToDeliver = false;
                         specimenHooked = true;
-                    } else if (specimenHooked){
+                    } else if (specimenHooked) {
                         outtake.clawOpen(true);
                         specimenHooked = false;
                         specimenInClaw = false;
@@ -615,41 +567,34 @@ public class teleOp extends LinearOpMode {
                         specimenRunTimer = true;
                     }
                 }
-                if (currentGamepad1.left_bumper && !previousGamepad1.left_bumper){
-                    outtake.hookAtIntake(true,false);
+                if (currentGamepad1.left_bumper && !previousGamepad1.left_bumper) {
+                    outtake.hookAtIntake(true, false);
                     outtake.clawOpen(true);
                     specimenInClaw = false;
-                    vertSlidesTarget = vertSlide.MIN_POSITION +1;
+                    vertSlidesTarget = vertSlide.MIN_POSITION + 1;
                     readyToGoToDelivery = false;
                 }
-
-
-                if (((currentGamepad1.a && !previousGamepad1.a) || (currentGamepad2.dpad_down && !previousGamepad2.dpad_down) || (currentGamepad1.left_bumper && !previousGamepad1.left_bumper))&& specimenHooked ){
+                if (((currentGamepad1.a && !previousGamepad1.a) ||
+                        (currentGamepad2.dpad_down && !previousGamepad2.dpad_down) ||
+                        (currentGamepad1.left_bumper && !previousGamepad1.left_bumper)) && specimenHooked) {
                     outtake.clawOpen(true);
                     specimenHooked = false;
                     specimenDelivTimer = currentTime;
                     specimenRunTimer = true;
                     specimenInClaw = false;
                 }
-                if (specimenRunTimer && specimenDelivTimer +0.2 <currentTime){
-                    vertSlidesTarget = vertSlide.MIN_POSITION +1;
+                if (specimenRunTimer && specimenDelivTimer + 0.2 < currentTime) {
+                    vertSlidesTarget = vertSlide.MIN_POSITION + 1;
                 }
-                if (specimenRunTimer && specimenDelivTimer +0.7 <currentTime){
-                    outtake.hookAtIntake(true,false);
+                if (specimenRunTimer && specimenDelivTimer + 0.7 < currentTime) {
+                    outtake.hookAtIntake(true, false);
                     specimenRunTimer = false;
                 }
-
             }
 
-            if (currentGamepad1.x){
+            if (currentGamepad1.x) {
                 outtake.clawOpen(true);
             }
-
-
-
-
-
-
 
             // ------------------- SUBSYSTEM UPDATES -------------------
             horizontalSlides.update();
@@ -666,6 +611,7 @@ public class teleOp extends LinearOpMode {
             telemetry.addData("Loop Time", loopTime);
             telemetry.addData("Highest Loop Time", highestLoopTime);
             telemetry.addData("Lowest Loop Time", lowestLoopTime);
+            telemetry.addData("Alliance", AllianceInfo.alliance.toString());
             telemetry.update();
 
             for (LynxModule hub : allHubs) {
@@ -673,7 +619,8 @@ public class teleOp extends LinearOpMode {
             }
         }
     }
-    // Helper method to get RGB values based on alliance color.
+
+    // Helper method to get RGB values based on alliance colour.
     private int[] getAllianceColorForEnum(TargetState state) {
         if (state == TargetState.RED) {
             return new int[] {255, 0, 0};
@@ -683,19 +630,14 @@ public class teleOp extends LinearOpMode {
         return new int[] {255, 255, 255};  // Default/fallback color.
     }
 
-
     // Helper method to set LED colors on both gamepads.
     private void setGamepadLedColor(int r, int g, int b) {
         gamepad1.setLedColor(r, g, b, LED_DURATION_CONTINUOUS);
         gamepad2.setLedColor(r, g, b, LED_DURATION_CONTINUOUS);
     }
 
-    private TargetState allianceTarget(AllianceColor alliance) {
-        return alliance == AllianceColor.RED ? TargetState.RED : TargetState.BLUE;
+    // Updated method to get target based on shared alliance colour.
+    private TargetState allianceTarget(AllianceColour alliance) {
+        return alliance == AllianceColour.RED ? TargetState.RED : TargetState.BLUE;
     }
-
-
-
-
 }
-
