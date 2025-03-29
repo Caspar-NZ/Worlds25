@@ -24,11 +24,11 @@ public class intake {
 
     // --- Constants: Rotation servo positions ---
     // Presets for leftRotate and rightRotate (linked inversely)
-    private static final double LEFT_DOWN_TRANSFER  = 0.88; //0.84
-    private static final double RIGHT_DOWN_TRANSFER = 0.12; //0.16
+    private static final double LEFT_DOWN_TRANSFER  = 0.86; //0.84
+    private static final double RIGHT_DOWN_TRANSFER = 0.14; //0.16
 
-    private static final double LEFT_DOWN_INTAKE    = 0.32; //0.28
-    private static final double RIGHT_DOWN_INTAKE   = 0.69; //0.73
+    private static final double LEFT_DOWN_INTAKE    = 0.30; //0.28
+    private static final double RIGHT_DOWN_INTAKE   = 0.71; //0.73
     private static final double LEFT_AUTOPOS    = 0.22; //0.28
     private static final double RIGHT_AUTOPOS   = 0.79; //0.73
 

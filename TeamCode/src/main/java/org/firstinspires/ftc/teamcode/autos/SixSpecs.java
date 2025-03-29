@@ -51,9 +51,7 @@ public class SixSpecs extends OpMode {
         RED,
         BLUE
     }
-    private AllianceColor alliance = AllianceColor.RED;
-
-
+    public AllianceColor alliance = AllianceColor.RED;
 
     private double slowdown = 1.0;
 
@@ -100,8 +98,8 @@ public class SixSpecs extends OpMode {
     private final Pose preThirdPush = new Pose(43, 14.7, Math.toRadians(0));
     private final Pose preFarPickUp = new Pose(13, 14.7, Math.toRadians(0)); // 16
     private final Pose farPickUp = new Pose(7.2, 14.7, Math.toRadians(0)); //16
-    private final Pose pre2ndDrop = new Pose(36.0, (70.0 + yOffset), Math.toRadians(0));
-    private final Pose slow2ndDrop = new Pose(43, (74.0 + yOffset), Math.toRadians(0));
+    private  Pose pre2ndDrop = new Pose(36.0, (70.0 + yOffset), Math.toRadians(0));
+    private  Pose slow2ndDrop = new Pose(43, (74.0 + yOffset), Math.toRadians(0));
     private final Pose preClosePickUpless2 = new Pose(14, 49, Math.toRadians(0));
     private final Pose closePickUpless2 = new Pose(8, 43, Math.toRadians(0));
     private final Pose preClosePickUp = new Pose(14, 51, Math.toRadians(0));
@@ -701,6 +699,71 @@ public class SixSpecs extends OpMode {
     @Override
     public void init() {
         // If any old threads or scheduler exist, shut them down to avoid duplicate threads.
+        boolean setSample = true;
+        while (setSample){
+            // Can add code to update telemetry or diagnostics here if needed.
+            previousGamepad1.copy(currentGamepad1);
+            previousGamepad2.copy(currentGamepad2);
+            currentGamepad1.copy(gamepad1);
+            currentGamepad2.copy(gamepad2);
+
+            // Toggle alliance on touchpad press.
+            if ((currentGamepad2.touchpad && !previousGamepad2.touchpad) ||
+                    (currentGamepad1.touchpad && !previousGamepad1.touchpad)) {
+                if (intake.target2 == TargetState.RED) {
+                    intake.setTarget(0, 0, 1);
+                    alliance = AllianceColor.BLUE;
+                } else {
+                    intake.setTarget(0, 1, 0);
+                    alliance = AllianceColor.RED;
+                }
+            }
+            // Increase xOffset (dpad up) if not exceeding 20
+            if ((currentGamepad1.dpad_up && !previousGamepad1.dpad_up) ||
+                    (currentGamepad2.dpad_up && !previousGamepad2.dpad_up)) {
+                if (xOffset < 20) {
+                    xOffset += 0.5;
+                }
+            }
+
+            // Decrease xOffset (dpad down) if not below 0
+            if ((currentGamepad1.dpad_down && !previousGamepad1.dpad_down) ||
+                    (currentGamepad2.dpad_down && !previousGamepad2.dpad_down)) {
+                if (xOffset > 0) {
+                    xOffset -= 0.5;
+                }
+            }
+
+            // Increase yOffset (dpad right) if not exceeding +4
+            if ((currentGamepad1.dpad_right && !previousGamepad1.dpad_right) ||
+                    (currentGamepad2.dpad_right && !previousGamepad2.dpad_right)) {
+                if (yOffset < 4) {
+                    yOffset += 0.5;
+                }
+            }
+
+
+
+            // Decrease yOffset (dpad left) if not below -4
+            if ((currentGamepad1.dpad_left && !previousGamepad1.dpad_left) ||
+                    (currentGamepad2.dpad_left && !previousGamepad2.dpad_left)) {
+                if (yOffset > -4) {
+                    yOffset -= 0.5;
+                }
+            }
+
+            slideTarget = 70 + (xOffset * 30);
+
+            telemetry.addData("yOffset", yOffset);
+            telemetry.addData("xOffset", xOffset);
+            telemetry.addData("Alliance", alliance.toString());
+            telemetry.update();
+
+            if((currentGamepad1.a && !previousGamepad1.a)||(currentGamepad2.a && !previousGamepad2.a)){
+                setSample=false;
+            }
+        }
+
         if (scheduler != null && !scheduler.isShutdown()) {
             scheduler.shutdownNow();
         }
@@ -758,69 +821,7 @@ public class SixSpecs extends OpMode {
 
     @Override
     public void init_loop() {
-        // Can add code to update telemetry or diagnostics here if needed.
-        previousGamepad1.copy(currentGamepad1);
-        previousGamepad2.copy(currentGamepad2);
-        currentGamepad1.copy(gamepad1);
-        currentGamepad2.copy(gamepad2);
-        double currentxOffset = xOffset;
-        double currentyOffset = yOffset;
 
-            // Toggle alliance on touchpad press.
-        if ((currentGamepad2.touchpad && !previousGamepad2.touchpad) ||
-                (currentGamepad1.touchpad && !previousGamepad1.touchpad)) {
-            if (intake.target2 == TargetState.RED) {
-                intake.setTarget(0, 0, 1);
-                alliance = AllianceColor.BLUE;
-            } else {
-                intake.setTarget(0, 1, 0);
-                alliance = AllianceColor.RED;
-            }
-        }
-        // Increase xOffset (dpad up) if not exceeding 20
-        if ((currentGamepad1.dpad_up && !previousGamepad1.dpad_up) ||
-                (currentGamepad2.dpad_up && !previousGamepad2.dpad_up)) {
-            if (xOffset < 20) {
-                xOffset += 0.5;
-            }
-        }
-
-        // Decrease xOffset (dpad down) if not below 0
-        if ((currentGamepad1.dpad_down && !previousGamepad1.dpad_down) ||
-                (currentGamepad2.dpad_down && !previousGamepad2.dpad_down)) {
-            if (xOffset > 0) {
-                xOffset -= 0.5;
-            }
-        }
-
-        // Increase yOffset (dpad right) if not exceeding +4
-        if ((currentGamepad1.dpad_right && !previousGamepad1.dpad_right) ||
-                (currentGamepad2.dpad_right && !previousGamepad2.dpad_right)) {
-            if (yOffset < 4) {
-                yOffset += 0.5;
-            }
-        }
-
-        // Decrease yOffset (dpad left) if not below -4
-        if ((currentGamepad1.dpad_left && !previousGamepad1.dpad_left) ||
-                (currentGamepad2.dpad_left && !previousGamepad2.dpad_left)) {
-            if (yOffset > -4) {
-                yOffset -= 0.5;
-            }
-        }
-
-        slideTarget = 70 + (xOffset * 30);
-
-        if (currentxOffset != xOffset || currentyOffset != yOffset){
-            follower = new Follower(hardwareMap);
-            follower.setStartingPose(startPose);
-            buildPaths();
-        }
-
-        telemetry.addData("yOffset", yOffset);
-        telemetry.addData("xOffset", xOffset);
-        telemetry.addData("Alliance", alliance.toString());
-        telemetry.update();
     }
 
     @Override
