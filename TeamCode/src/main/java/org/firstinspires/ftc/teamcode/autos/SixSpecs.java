@@ -81,44 +81,47 @@ public class SixSpecs extends OpMode {
     double yOffset = 0;
     boolean readyToIntake = false;
     // Define all poses and paths
+    boolean initLoop = true;
+    boolean firstLoop = true;
+    double lastYOffset = yOffset;
 
-    private final Pose startPose = new Pose(7.32, 77.2, Math.toRadians(0));
-    private final Pose pre1stDrop = new Pose(36.6, 77.2, Math.toRadians(0));
-    private final Pose slow1stDrop = new Pose(42, 77.2, Math.toRadians(0));
-    private final Pose preFirstSample = new Pose(35, 54, Math.toRadians(0));//48
-    private final Pose firstSample = new Pose(43, 35, Math.toRadians(0));//y32.5
-    private final Pose firstPush = new Pose(16, 27, Math.toRadians(0));
-    private final Pose secondSample = new Pose(43, 27, Math.toRadians(0));
-    private final Pose preSecondPush = new Pose(43, 20.3, Math.toRadians(0));
-    private final Pose secondPush = new Pose(16, 20.3, Math.toRadians(0));
-    private final Pose thirdSample = new Pose(35.0, 19.9, Math.toRadians(0));
-    private final Pose preThirdPush = new Pose(43, 14.7, Math.toRadians(0));
-    private final Pose preFarPickUp = new Pose(13, 14.7, Math.toRadians(0)); // 16
-    private final Pose farPickUp = new Pose(7.2, 14.7, Math.toRadians(0)); //16
-    private  Pose pre2ndDrop = new Pose(36.0, (70.0 + yOffset), Math.toRadians(0));
-    private  Pose slow2ndDrop = new Pose(43, (74.0 + yOffset), Math.toRadians(0));
-    private final Pose preClosePickUpless2 = new Pose(14, 49, Math.toRadians(0));
-    private final Pose closePickUpless2 = new Pose(8, 43, Math.toRadians(0));
-    private final Pose preClosePickUp = new Pose(14, 51, Math.toRadians(0));
-    private final Pose closePickUp = new Pose(7.5, 45, Math.toRadians(0));
-    private final Pose closePickUpx6 = new Pose(7.1, 45, Math.toRadians(0));
-    private final Pose closePickUpx65 = new Pose(7.5, 45, Math.toRadians(0));
-    private final Pose pre3rdDrop = new Pose(36.0, 68.0, Math.toRadians(0));
-    private final Pose slow3rdDrop = new Pose(41.5, 72, Math.toRadians(0));
-    private final Pose pre4thDrop = new Pose(36.0, 67.0, Math.toRadians(0));
-    private final Pose slow4thDrop = new Pose(41.5, 71, Math.toRadians(0));
-    private final Pose pre5thDrop = new Pose(36.0, 66, Math.toRadians(0));
-    private final Pose slow5thDrop = new Pose(41.5, 70, Math.toRadians(0));
-    private final Pose pre6thDrop = new Pose(36.0, 65, Math.toRadians(0));
-    private final Pose slow6thDrop = new Pose(41.5, 69, Math.toRadians(0));
-    private final Pose parkPose = new Pose(30.0, 60.0, Math.toRadians(-135)); //was 10 40
-
-
-    // Paths and PathChains
-    private PathChain preFirstSpec, firstSpec, toFirstSample, pushFirstSample, toSecondSample, moveYTo2ndSample, pushSecondSample, toThirdSample, moveYTo3rdSample, pushThirdSample, firstPickUp, preSecondSpec, secondSpec, preSecondPickUp, secondPickUp, preThirdSpec, thirdSpec, preThirdPickUp, thirdPickUp, preFourthSpec, fourthSpec, preFourthPickUp, fourthPickUp, preFithSpec, fithSpec, preFithPickUp, fithPickUp, preSixthSpec, sixthSpec, park;
-
+    PathChain preFirstSpec, firstSpec, toFirstSample, pushFirstSample, toSecondSample, moveYTo2ndSample, pushSecondSample, toThirdSample, moveYTo3rdSample, pushThirdSample, firstPickUp, preSecondSpec, secondSpec, preSecondPickUp, secondPickUp, preThirdSpec, thirdSpec, preThirdPickUp, thirdPickUp, preFourthSpec, fourthSpec, preFourthPickUp, fourthPickUp, preFithSpec, fithSpec, preFithPickUp, fithPickUp, preSixthSpec, sixthSpec, park;
+    Pose startPose, pre1stDrop, slow1stDrop, preFirstSample, firstSample, firstPush, secondSample,preSecondPush,secondPush,thirdSample,preThirdPush,preFarPickUp,farPickUp,pre2ndDrop,preClosePickUp,preClosePickUpless2,pre3rdDrop,pre4thDrop,pre5thDrop,pre6thDrop,parkPose,slow2ndDrop,closePickUpless2,closePickUp,closePickUpx6,closePickUpx65,slow3rdDrop,slow4thDrop,slow5thDrop,slow6thDrop;
 
     public void buildPaths() {
+        startPose= new Pose(7.32, 77.2, Math.toRadians(0));
+        pre1stDrop = new Pose(36.6, 77.2, Math.toRadians(0));
+        slow1stDrop = new Pose(42, 77.2, Math.toRadians(0));
+        preFirstSample = new Pose(35, 54, Math.toRadians(0));//48
+        firstSample = new Pose(43, 35, Math.toRadians(0));//y32.5
+        firstPush = new Pose(16, 27, Math.toRadians(0));
+        secondSample = new Pose(43, 27, Math.toRadians(0));
+        preSecondPush = new Pose(43, 20.3, Math.toRadians(0));
+        secondPush = new Pose(16, 20.3, Math.toRadians(0));
+        thirdSample = new Pose(35.0, 19.9, Math.toRadians(0));
+        preThirdPush = new Pose(43, 14.7, Math.toRadians(0));
+        preFarPickUp = new Pose(13, 14.7, Math.toRadians(0)); // 16
+        farPickUp = new Pose(7.2, 14.7, Math.toRadians(0)); //16
+        pre2ndDrop = new Pose(36.0, (70.0 + yOffset), Math.toRadians(0));
+        slow2ndDrop = new Pose(43, (74.0 + yOffset), Math.toRadians(0));
+        preClosePickUpless2 = new Pose(14, 49, Math.toRadians(0));
+        closePickUpless2 = new Pose(8, 43, Math.toRadians(0));
+        preClosePickUp = new Pose(14, 51, Math.toRadians(0));
+        closePickUp = new Pose(7.5, 45, Math.toRadians(0));
+        closePickUpx6 = new Pose(7.1, 45, Math.toRadians(0));
+        closePickUpx65 = new Pose(7.5, 45, Math.toRadians(0));
+        pre3rdDrop = new Pose(36.0, 68.0, Math.toRadians(0));
+        slow3rdDrop = new Pose(41.5, 72, Math.toRadians(0));
+        pre4thDrop = new Pose(36.0, 67.0, Math.toRadians(0));
+        slow4thDrop = new Pose(41.5, 71, Math.toRadians(0));
+        pre5thDrop = new Pose(36.0, 66, Math.toRadians(0));
+        slow5thDrop = new Pose(41.5, 70, Math.toRadians(0));
+        pre6thDrop = new Pose(36.0, 65, Math.toRadians(0));
+        slow6thDrop = new Pose(41.5, 69, Math.toRadians(0));
+        parkPose= new Pose(30.0, 60.0, Math.toRadians(-135)); //was 10 40
+
+
+        // Paths and PathChains
         preFirstSpec = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(startPose), new Point(pre1stDrop)))
                 .setLinearHeadingInterpolation(startPose.getHeading(), pre1stDrop.getHeading())
@@ -245,7 +248,7 @@ public class SixSpecs extends OpMode {
 
     public void autonomousPathUpdate() {
         switch(pathState) {
-            // CASE 0: Start high-speed path from startPose to pre1stDrop.
+            // CASE 0: Start high-speed path from startto pre1stDrop.
             case 0:
                 slowdown = 1.0;
                 follower.followPath(preFirstSpec, false);
@@ -696,8 +699,6 @@ public class SixSpecs extends OpMode {
     @Override
     public void init() {
         // If any old threads or scheduler exist, shut them down to avoid duplicate threads.
-
-
         if (scheduler != null && !scheduler.isShutdown()) {
             scheduler.shutdownNow();
         }
@@ -709,12 +710,10 @@ public class SixSpecs extends OpMode {
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
 
-        Constants.setConstants(FConstants.class, LConstants.class);
-        follower = new Follower(hardwareMap);
-        follower.setStartingPose(startPose);
 
 
-        buildPaths();
+
+        //buildPaths();
 
         horizontalSlides = new horiSlides(hardwareMap);
         verticalSlides = new vertSlide(hardwareMap);
@@ -755,65 +754,88 @@ public class SixSpecs extends OpMode {
 
     @Override
     public void init_loop() {
-        previousGamepad1.copy(currentGamepad1);
-        previousGamepad2.copy(currentGamepad2);
-        currentGamepad1.copy(gamepad1);
-        currentGamepad2.copy(gamepad2);
+        if (initLoop) {
+            // Update gamepad copies
+            previousGamepad1.copy(currentGamepad1);
+            previousGamepad2.copy(currentGamepad2);
+            currentGamepad1.copy(gamepad1);
+            currentGamepad2.copy(gamepad2);
 
-        // Toggle alliance on touchpad press.
-        if ((currentGamepad2.touchpad && !previousGamepad2.touchpad) ||
-                (currentGamepad1.touchpad && !previousGamepad1.touchpad)) {
-            if (AllianceInfo.alliance == AllianceColour.RED) {
-                // Switch from RED to BLUE.
-                intake.setTarget(0, 0, 1);  // Update target if needed.
-                AllianceInfo.alliance = AllianceColour.BLUE;
-            } else {
-                // Switch from BLUE to RED.
-                intake.setTarget(0, 1, 0);  // Update target if needed.
-                AllianceInfo.alliance = AllianceColour.RED;
+// Toggle alliance on touchpad press.
+            if ((currentGamepad2.touchpad && !previousGamepad2.touchpad) ||
+                    (currentGamepad1.touchpad && !previousGamepad1.touchpad)) {
+                if (AllianceInfo.alliance == AllianceColour.RED) {
+                    // Switch from RED to BLUE.
+                    intake.setTarget(0, 0, 1);  // Update target if needed.
+                    AllianceInfo.alliance = AllianceColour.BLUE;
+                } else {
+                    // Switch from BLUE to RED.
+                    intake.setTarget(0, 1, 0);  // Update target if needed.
+                    AllianceInfo.alliance = AllianceColour.RED;
+                }
             }
-        }
-        // Increase xOffset (dpad up) if not exceeding 20
-        if ((currentGamepad1.dpad_up && !previousGamepad1.dpad_up) ||
-                (currentGamepad2.dpad_up && !previousGamepad2.dpad_up)) {
-            if (xOffset < 20) {
-                xOffset += 0.5;
+
+// Increase xOffset (dpad up) if not exceeding 20
+            if ((currentGamepad1.dpad_up && !previousGamepad1.dpad_up) ||
+                    (currentGamepad2.dpad_up && !previousGamepad2.dpad_up)) {
+                if (xOffset < 20) {
+                    xOffset += 0.5;
+                }
             }
-        }
 
-        // Decrease xOffset (dpad down) if not below 0
-        if ((currentGamepad1.dpad_down && !previousGamepad1.dpad_down) ||
-                (currentGamepad2.dpad_down && !previousGamepad2.dpad_down)) {
-            if (xOffset > 0) {
-                xOffset -= 0.5;
+// Decrease xOffset (dpad down) if not below 0
+            if ((currentGamepad1.dpad_down && !previousGamepad1.dpad_down) ||
+                    (currentGamepad2.dpad_down && !previousGamepad2.dpad_down)) {
+                if (xOffset > 0) {
+                    xOffset -= 0.5;
+                }
             }
-        }
 
-        // Increase yOffset (dpad right) if not exceeding +4
-        if ((currentGamepad1.dpad_right && !previousGamepad1.dpad_right) ||
-                (currentGamepad2.dpad_right && !previousGamepad2.dpad_right)) {
-            if (yOffset < 4) {
-                yOffset += 0.5;
+// Increase yOffset (dpad right) if not exceeding +4
+            if ((currentGamepad1.dpad_right && !previousGamepad1.dpad_right) ||
+                    (currentGamepad2.dpad_right && !previousGamepad2.dpad_right)) {
+                if (yOffset > -4) {
+                    yOffset -= 0.5;
+                }
             }
-        }
 
-
-
-        // Decrease yOffset (dpad left) if not below -4
-        if ((currentGamepad1.dpad_left && !previousGamepad1.dpad_left) ||
-                (currentGamepad2.dpad_left && !previousGamepad2.dpad_left)) {
-            if (yOffset > -4) {
-                yOffset -= 0.5;
+// Decrease yOffset (dpad left) if not below -4
+            if ((currentGamepad1.dpad_left && !previousGamepad1.dpad_left) ||
+                    (currentGamepad2.dpad_left && !previousGamepad2.dpad_left)) {
+                if (yOffset < 6) {
+                    yOffset += 0.5;
+                }
             }
+
+// Other condition: right bumper press.
+            if ((currentGamepad1.right_bumper && !previousGamepad1.right_bumper) ||
+                    (currentGamepad2.right_bumper && !previousGamepad2.right_bumper)) {
+                initLoop = false;
+            }
+
+            slideTarget = 70 + (xOffset * 30);
+
+// Run the initialization block only on the first loop or when yOffset changes.
+            if (firstLoop || (yOffset != lastYOffset)) {
+                Constants.setConstants(FConstants.class, LConstants.class);
+                follower = new Follower(hardwareMap);
+                follower.setStartingPose(startPose);
+                buildPaths();
+                firstLoop = false;
+                lastYOffset = yOffset;  // update the tracker after changes
+            }
+
+            telemetry.addData("yOffset", yOffset);
+            telemetry.addData("xOffset", xOffset);
+            telemetry.addData("Alliance", AllianceInfo.alliance.toString());
+            telemetry.update();
+        } else {
+            telemetry.addData("yOffset", yOffset);
+            telemetry.addData("xOffset", xOffset);
+            telemetry.addData("Alliance", AllianceInfo.alliance.toString());
+            telemetry.addData("Ready to start!","");
+            telemetry.update();
         }
-
-        slideTarget = 70 + (xOffset * 30);
-
-        telemetry.addData("yOffset", yOffset);
-        telemetry.addData("xOffset", xOffset);
-        telemetry.addData("Alliance", AllianceInfo.alliance.toString());
-        telemetry.update();
-
     }
 
     @Override
