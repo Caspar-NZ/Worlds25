@@ -480,7 +480,6 @@ public class teleOp extends LinearOpMode {
                 outtake.specDropAtIntakePos(true);
                 outtake.specDropOpen(false);
                 specRunTimeRunning = false;
-                sampleInBucket = false;
             }
 
             if ((currentGamepad2.a && !previousGamepad2.a) && !specimenInClaw) {
@@ -496,6 +495,7 @@ public class teleOp extends LinearOpMode {
             if (currentGamepad2.b && !previousGamepad2.b) {
                 if (!outtake.BucketPositionAtIntake){
                     outtake.specDropOpen(true);
+                    sampleInBucket = false;
                     specBucketRunTimer = currentTime;
                     specRunTimeRunning = true;
                 }
@@ -535,6 +535,7 @@ public class teleOp extends LinearOpMode {
                 if ((currentGamepad1.right_bumper && !previousGamepad1.right_bumper && !specimenInClaw)) {
                     if (sampleInBucket) {
                         outtake.specDropOpen(true);
+                        sampleInBucket = false;
                         outtake.specDropAtIntakePos(false);
                         specBucketRunTimer = currentTime + 0.6;
                         specRunTimeRunning = true;

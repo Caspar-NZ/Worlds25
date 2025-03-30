@@ -5,9 +5,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class outtake {
     private final Servo clawRotate, claw, specDrop, specRelease, sampleRotate, sampleRelease;
-    final private double rotateAtIntake = 0.94; //1.0
+    final private double rotateAtIntake = 0.97; //0.94
     final private double rotateAtAutoStart =0.63;
-    final private double rotateAtDelivery = 0.32; //0.32
+    final private double rotateAtDelivery = 0.36; //0.32
 
     final private double clawOpen = 0.0;
     final private double clawClosed = 0.23;
