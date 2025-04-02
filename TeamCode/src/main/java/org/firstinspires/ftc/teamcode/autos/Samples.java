@@ -58,11 +58,13 @@ public class Samples extends OpMode {
     private ScheduledExecutorService scheduler;
 
     private double waitingTimer;
+    boolean runOnce = false;
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
     double sampleTimer = 0.0;
+    double delayTimer = 0.0;
 
     boolean sampleCollected = false;
     boolean timeoutCollection = false;
@@ -85,18 +87,18 @@ public class Samples extends OpMode {
 
     public void buildPaths() {
         startPose= new Pose(7.3, 112, Math.toRadians(0));
-        firstDrop = new Pose(7.3, 130, Math.toRadians(0));
-        firstPickUp = new Pose(24, 120, Math.toRadians(0));
-        secondDrop = new Pose(7.3, 130, Math.toRadians(0));
-        secondPickUp = new Pose(24, 130, Math.toRadians(0));
-        thirdDrop = new Pose(7.3, 130, Math.toRadians(0));
-        thirdPickup = new Pose(28, 128, Math.toRadians(35));
-        fourthDrop = new Pose(7.3, 130, Math.toRadians(0));
+        firstDrop = new Pose(8, 128, Math.toRadians(0));
+        firstPickUp = new Pose(24, 122, Math.toRadians(0));
+        secondDrop = new Pose(7.3, 128, Math.toRadians(0));
+        secondPickUp = new Pose(24, 129.5, Math.toRadians(0));
+        thirdDrop = new Pose(7.3, 128, Math.toRadians(0));
+        thirdPickup = new Pose(34, 130, Math.toRadians(50));
+        fourthDrop = new Pose(7.3, 128, Math.toRadians(0));
 
-        towardsSub = new Pose(60, 108, Math.toRadians(-90));
-        preFirstSubCollection = new Pose(60, 100, Math.toRadians(-90));
-        firstSubCollection = new Pose(60, 95, Math.toRadians(-90));
-        towardsBuckets = new Pose(60, 108, Math.toRadians(-90));
+        towardsSub = new Pose(65, 108, Math.toRadians(-90));
+        preFirstSubCollection = new Pose(65, 100, Math.toRadians(-90));
+        firstSubCollection = new Pose(65, 95, Math.toRadians(-90));
+        towardsBuckets = new Pose(65, 108, Math.toRadians(-90));
         preFifthDrop = new Pose(24, 124, Math.toRadians(0));
         fifthDrop = new Pose(7.3, 130, Math.toRadians(0));
 
@@ -222,29 +224,32 @@ public class Samples extends OpMode {
             // CASE 0: Start firstDelivery immediately.
             // firstDelivery: from startPose (7.3,112) to firstDrop (7.3,130) – moving along Y.
             case 0:
-                slowdown = 0.5;
-                follower.followPath(firstDelivery, true);
                 verticalSlides.setPosition(verticalSlides.MIN_POSITION + 1169);
-                horizontalSlides.setPosition(150);
-                outtake.sampleAtIntakePos(false);
-                outtake.sampleReleaseOpen(false);
-                setPathState(pathState + 1);
-                outtake.specDropAtIntakePos(false);
+                if (delayTimer+0.4 <getRuntime()) {
+                    slowdown = 1.0;
+                    follower.followPath(firstDelivery, true);
+                    horizontalSlides.setPosition(150);
+                    outtake.sampleAtIntakePos(false);
+                    outtake.sampleReleaseOpen(false);
+                    setPathState(pathState + 1);
+                    outtake.specDropAtIntakePos(false);
+                }
                 break;
 
             // CASE 1: While firstDelivery is running, cancel early when Y >= 129.
             // Then start firstCollection (from firstDrop (7.3,130) to firstPickUp (24,120) – primarily along X).
             case 1:
-                if (!follower.isBusy() || follower.getPose().getY() >= 129) {
+                if (!follower.isBusy() || follower.getPose().getY() >= 127) {
                     outtake.sampleReleaseOpen(true);
                     delayedRun(() -> outtake.sampleReleaseOpen(false), 500);
                     delayedRun(() -> outtake.sampleAtIntakePos(true), 500);
                     delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 1), 500);
                     delayedRun(() -> intake.setRotation(INTAKE), 500);
-                    slowdown = 0.5;
+                    slowdown = 0.8;
                     follower.followPath(firstCollection, true);
                     setPathState(pathState + 1);
                     timeout = getRuntime();
+                    sampleCollected = false;
                 }
                 break;
 
@@ -253,12 +258,21 @@ public class Samples extends OpMode {
             case 2:
                 if (!follower.isBusy() || follower.getPose().getX() >= 23) {
                     if (!sampleCollected){
-                        collectSample();
+                        collectSample(true);
+                        runOnce = true;
                     } else {
-                        slowdown = 0.5;
-                        follower.followPath(secondDelivery, true);
-                        setPathState(pathState + 1);
-                        timeout = getRuntime();
+                        if (runOnce) {
+                            delayedRun(() -> intake.setSpeed(-1, -1), 500);
+                            delayedRun(() -> intake.setSpeed(-1, -1), 800);
+                            delayedRun(() -> outtake.sampleAtIntakePos(false), 800);
+                            delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 1169), 800);
+                            runOnce = false;
+                        }
+                        if (delayTimer+0.8 <getRuntime()) {
+                            slowdown = 0.5;
+                            follower.followPath(secondDelivery, true);
+                            setPathState(pathState + 1);
+                        }
                     }
                 }
                 break;
@@ -267,10 +281,17 @@ public class Samples extends OpMode {
             // Then start secondCollection.
             case 3:
                 if (!follower.isBusy() || follower.getPose().getX() <= 8.3) {
+                    horizontalSlides.setPosition(150);
+                    outtake.sampleReleaseOpen(true);
+                    delayedRun(() -> outtake.sampleReleaseOpen(false), 500);
+                    delayedRun(() -> outtake.sampleAtIntakePos(true), 500);
+                    delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 1), 500);
+                    delayedRun(() -> intake.setRotation(INTAKE), 500);
                     slowdown = 0.5;
                     follower.followPath(secondCollection, true);
                     setPathState(pathState + 1);
                     timeout = getRuntime();
+                    sampleCollected = false;
                 }
                 break;
 
@@ -278,10 +299,23 @@ public class Samples extends OpMode {
             // Then start thirdDelivery.
             case 4:
                 if (!follower.isBusy() || follower.getPose().getX() >= 23) {
-                    slowdown = 0.5;
-                    follower.followPath(thirdDelivery, true);
-                    setPathState(pathState + 1);
-                    timeout = getRuntime();
+                    if (!sampleCollected){
+                        collectSample(true);
+                        runOnce = true;
+                    } else {
+                        if (runOnce) {
+                            delayedRun(() -> intake.setSpeed(-1, -1), 500);
+                            delayedRun(() -> intake.setSpeed(-1, -1), 800);
+                            delayedRun(() -> outtake.sampleAtIntakePos(false), 800);
+                            delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 1169), 800);
+                            runOnce = false;
+                        }
+                        if (delayTimer+1.4 <getRuntime()) {
+                            slowdown = 0.5;
+                            follower.followPath(thirdDelivery, true);
+                            setPathState(pathState + 1);
+                        }
+                    }
                 }
                 break;
 
@@ -289,8 +323,15 @@ public class Samples extends OpMode {
             // Then start thirdCollection.
             case 5:
                 if (!follower.isBusy() || follower.getPose().getX() <= 8.3) {
+                    horizontalSlides.setPosition(150);
+                    outtake.sampleReleaseOpen(true);
+                    delayedRun(() -> outtake.sampleReleaseOpen(false), 500);
+                    delayedRun(() -> outtake.sampleAtIntakePos(true), 500);
+                    delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 1), 500);
+                    delayedRun(() -> intake.setRotation(INTAKE), 500);
+                    sampleCollected = false;
                     slowdown = 0.5;
-                    follower.followPath(thirdCollection, true);
+                    follower.followPath(thirdCollection, false);
                     setPathState(pathState + 1);
                     timeout = getRuntime();
                 }
@@ -300,10 +341,25 @@ public class Samples extends OpMode {
             // Then start fourthDelivery.
             case 6:
                 if (!follower.isBusy() || follower.getPose().getX() >= 27) {
-                    slowdown = 0.5;
-                    follower.followPath(fourthDelivery, true);
-                    setPathState(pathState + 1);
-                    timeout = getRuntime();
+                    if (!sampleCollected){
+                        collectSample(false);
+                        runOnce = true;
+                    } else {
+                        if (runOnce) {
+                            delayedRun(() -> horizontalSlides.setPosition(horizontalSlides.MIN_POSITION + 1), 200);
+                            delayedRun(() -> intake.setSpeed(-1, -1), 700);
+                            delayedRun(() -> intake.setSpeed(-1, -1), 1000);
+                            delayedRun(() -> outtake.sampleAtIntakePos(false), 1000);
+                            delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 1169), 1000);
+                            runOnce = false;
+                        }
+                        if (delayTimer+0.8 <getRuntime()) {
+                            slowdown = 0.5;
+                            follower.followPath(fourthDelivery, true);
+                            setPathState(pathState + 1);
+                            timeout = getRuntime();
+                        }
+                    }
                 }
                 break;
 
@@ -311,17 +367,22 @@ public class Samples extends OpMode {
             // Then start goingToSub.
             case 7:
                 if (!follower.isBusy() || follower.getPose().getX() <= 8.3) {
+                    outtake.sampleReleaseOpen(true);
+                    delayedRun(() -> outtake.sampleReleaseOpen(false), 500);
+                    delayedRun(() -> outtake.sampleAtIntakePos(true), 500);
+                    delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 1), 500);
                     slowdown = 1.0;
                     follower.followPath(goingToSub, false);
                     setPathState(pathState + 1);
                     timeout = getRuntime();
+                    sampleCollected = false;
                 }
                 break;
 
             // CASE 8: Check goingToSub (from fourthDrop (7.3,130) to towardsSub (60,108)) – X increasing; cancel when X >= 59.
             // Then start preSub.
             case 8:
-                if (!follower.isBusy() || follower.getPose().getX() >= 59) {
+                if (!follower.isBusy() || follower.getPose().getX() >= 69) {
                     slowdown = 1.0;
                     follower.followPath(preSub, false);
                     setPathState(pathState + 1);
@@ -337,6 +398,9 @@ public class Samples extends OpMode {
                     follower.followPath(firstSubPickup, true);
                     setPathState(pathState + 1);
                     timeout = getRuntime();
+                    horizontalSlides.setPosition(150);
+                    delayedRun(() -> intake.setRotation(INTAKE), 500);
+                    sampleCollected = false;
                 }
                 break;
 
@@ -344,10 +408,18 @@ public class Samples extends OpMode {
             // Then start goingToBuckets.
             case 10:
                 if (!follower.isBusy() || follower.getPose().getY() <= 96) {
-                    slowdown = 1.0;
-                    follower.followPath(goingToBuckets, false);
-                    setPathState(pathState + 1);
-                    timeout = getRuntime();
+
+                    if (!sampleCollected){
+                        collectSample(true);
+                    } else {
+                        slowdown = 1.0;
+                        delayedRun(() -> intake.setSpeed(-1, -1), 500);
+                        delayedRun(() -> intake.setSpeed(-1, -1), 800);
+                        delayedRun(() -> outtake.sampleAtIntakePos(false), 800);
+                        follower.followPath(goingToBuckets, false);
+                        setPathState(pathState + 1);
+                        timeout = getRuntime();
+                    }
                 }
                 break;
 
@@ -528,11 +600,7 @@ public class Samples extends OpMode {
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
 
-        Constants.setConstants(FConstants.class, LConstants.class);
-        follower = new Follower(hardwareMap);
-        buildPaths();
-        follower.setStartingPose(startPose);
-        buildPaths();
+
 
 
         //buildPaths();
@@ -555,8 +623,11 @@ public class Samples extends OpMode {
         outtake.specDropOpen(false);
         verticalSlides.setPosition(0);
 
+        outtake.sampleAtIntakePos(false);
+        outtake.sampleReleaseOpen(false);
+
         AllianceInfo.alliance = AllianceColour.RED;
-        intake.setTarget(0, 1, 0);
+        intake.setTarget(1, 0, 0);
         horizontalSlides.update();
         verticalSlides.update();
         outtake.update();
@@ -576,13 +647,17 @@ public class Samples extends OpMode {
 
     @Override
     public void init_loop() {
-
+        Constants.setConstants(FConstants.class, LConstants.class);
+        follower = new Follower(hardwareMap);
+        follower.setStartingPose(startPose);
+        buildPaths();
     }
 
     @Override
     public void start() {
         opmodeTimer.resetTimer();
         setPathState(0);
+        delayTimer = getRuntime();
     }
 
     @Override
@@ -597,7 +672,7 @@ public class Samples extends OpMode {
     }
 
     // Method to properly stop the asyncUpdatesThread.
-    public void collectSample(){
+    public void collectSample(boolean comeHome){
         intake.setTarget(1, 0, 0);
         TargetState detectedColor = intake.getDetectedColor();
         TargetState previousIntake = thisIntake;
@@ -644,16 +719,12 @@ public class Samples extends OpMode {
             }
         } else {
             intake.setRotation(TRANSFER);
-            horizontalSlides.setPosition(horizontalSlides.MIN_POSITION + 1);
-            sampleCollected = true;
-        }
-        if ((horizontalSlides.getCurrentPosition() > (horizontalSlides.MIN_POSITION + 800)) || (sampleTimer+4.0 <getRuntime())) {
-            intake.setRotation(TRANSFER);
-            horizontalSlides.setPosition(horizontalSlides.MIN_POSITION + 1);
-            if (detectedColor != TargetState.NONE && detectedColor != TargetState.MIXED && doubleDouble && !doubleDoubleTarget){
-                intake.setTimedIntake(-1,-1,2);
+            if (comeHome) {
+                horizontalSlides.setPosition(horizontalSlides.MIN_POSITION + 1);
             }
-            timeoutCollection = true;
+            sampleCollected = true;
+            delayTimer = getRuntime();
+            goingHome = false;
         }
 
     }

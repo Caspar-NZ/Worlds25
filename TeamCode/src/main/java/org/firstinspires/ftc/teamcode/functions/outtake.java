@@ -7,10 +7,10 @@ public class outtake {
     private final Servo clawRotate, claw, specDrop, specRelease, sampleRotate, sampleRelease;
     final private double rotateAtIntake = 0.97; //0.94
     final private double rotateAtAutoStart =0.63;
-    final private double rotateAtDelivery = 0.36; //0.32
+    final private double rotateAtDelivery = 0.35; //0.32
 
     final private double clawOpen = 0.0;
-    final private double clawClosed = 0.23;
+    final private double clawClosed = 0.22;
     final private double specDropAtIntake = 1.0;
     final private double specDropAtAuto = 0.88;
     final private double specDropAtDelivery = 0.76;
@@ -21,6 +21,7 @@ public class outtake {
     final private double sampleAtIntake = 0.45;
     final private double sampleAtDelivery = 0.1;
     final private double sampleOutOfWay = 0;
+    final private double sampleStartPos = 0.25;
     public boolean isClawOpen, isSampleOpen, samplePositionAtIntake, BucketPositionAtIntake,clawAtIntake,specDropOpen;
     private double setHookPos, setClawPos, setBucketPos, setReleasePos, setSamplePos, setSampleRotatePos;
     public boolean dumpingYellows = true;
@@ -105,5 +106,8 @@ public class outtake {
     }
     public void setSpecDropAtAuto(){
         setBucketPos = specDropAtAuto;
+    }
+    public void setSampleInside18(){
+        setSampleRotatePos = sampleStartPos;
     }
 }
