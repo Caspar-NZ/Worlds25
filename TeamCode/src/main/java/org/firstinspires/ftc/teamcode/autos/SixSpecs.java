@@ -437,7 +437,7 @@ public class SixSpecs extends OpMode {
                 if (follower.getPose().getX() >= 40.80){
                     verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750);
                 }
-                if ((follower.getPose().getX() >= 37.0 && readyToIntake && !YR2) || (readyToIntake && YR2)){
+                if ((follower.getPose().getX() >= 37.0 && readyToIntake && !YR2) || ((follower.getPose().getY() <= yOffset+0.8 || !follower.isBusy()) && YR2)){
                     if (sampleTimer == 0.0) {
                         sampleTimer = getRuntime();
                     }
@@ -752,7 +752,7 @@ public class SixSpecs extends OpMode {
                     delayedRun(() -> intake.setRotation(INTAKE), 750);
                     delayedRun(() -> intake.setInnerBlockOpen(false), 850);
                     delayedRun(() -> horizontalSlides.setPosition(horizontalSlides.MIN_POSITION + slideTarget -20), 650);
-                    delayedRun(() -> readyToIntake = true,1200);
+                    //delayedRun(() -> readyToIntake = true,1200);
                     delayedRun(() -> intake.setTimedIntake(-1, -1, 0.5),400);
                     slowdown = 0.5;
                     follower.followPath(secondSpecYR2, true);
