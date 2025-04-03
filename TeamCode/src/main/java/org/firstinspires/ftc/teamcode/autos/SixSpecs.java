@@ -104,7 +104,7 @@ public class SixSpecs extends OpMode {
         preFarPickUp = new Pose(13.2, 14.7, Math.toRadians(0)); // 16
         farPickUp = new Pose(7.5, 14.7, Math.toRadians(0)); //16
         pre2ndDropYR2 = new Pose(36.0, (76), Math.toRadians(0));
-        slow2ndDropYR2 = new Pose(43, (80), Math.toRadians(0));
+        slow2ndDropYR2 = new Pose(40, (80), Math.toRadians(0));
         pre2ndDrop = new Pose(36.0, (70.0 + yOffset), Math.toRadians(0));
         slow2ndDrop = new Pose(43, (74.0 + yOffset), Math.toRadians(0));
         slideToTheRight = new Pose(43, 69.2, Math.toRadians(0));
@@ -434,7 +434,7 @@ public class SixSpecs extends OpMode {
 
             // CASE 11: Wait for secondSpec (slow speed) to complete.
             case 13:
-                if (follower.getPose().getX() >= 40.80){
+                if (follower.getPose().getX() >= 40.80 && !YR2){
                     verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750);
                 }
                 if ((follower.getPose().getX() >= 37.0 && readyToIntake && !YR2) || ((follower.getPose().getY() <= yOffset+0.8 || !follower.isBusy()) && YR2)){
@@ -746,16 +746,16 @@ public class SixSpecs extends OpMode {
             case 50:
                 if (!follower.isBusy() || follower.getPose().getX() >= 35.0) {
                     intake.setInnerBlockOpen(true);
-                    delayedRun(() -> horizontalSlides.setPosition(horizontalSlides.MIN_POSITION + slideTarget +80), 100);
+                    delayedRun(() -> horizontalSlides.setPosition(horizontalSlides.MIN_POSITION + slideTarget +120), 100);
                     delayedRun(() -> intake.setAutoPos(), 450);
-                    delayedRun(() -> horizontalSlides.setPosition(horizontalSlides.MIN_POSITION + slideTarget +120), 450);
+                    delayedRun(() -> horizontalSlides.setPosition(horizontalSlides.MIN_POSITION + slideTarget +160), 450);
                     delayedRun(() -> intake.setRotation(INTAKE), 750);
                     delayedRun(() -> intake.setInnerBlockOpen(false), 850);
-                    delayedRun(() -> horizontalSlides.setPosition(horizontalSlides.MIN_POSITION + slideTarget -20), 650);
+                    delayedRun(() -> horizontalSlides.setPosition(horizontalSlides.MIN_POSITION + slideTarget +20), 650);
                     //delayedRun(() -> readyToIntake = true,1200);
                     delayedRun(() -> intake.setTimedIntake(-1, -1, 0.5),400);
                     slowdown = 0.5;
-                    follower.followPath(secondSpecYR2, true);
+                    follower.followPath(secondSpecYR2, false);
                     setPathState(pathState + 1);
                 }
                 break;
@@ -763,7 +763,7 @@ public class SixSpecs extends OpMode {
 
             case 51:
                 if (!follower.isBusy() || follower.getPose().getX() >= 41.0) {
-                    slowdown = 0.5;
+                    slowdown = 1.0;
                     follower.followPath(correctY, true);
                     setPathState(13);
                 }
