@@ -103,8 +103,8 @@ public class SixSpecs extends OpMode {
         preThirdPush = new Pose(43, 14.7, Math.toRadians(0));
         preFarPickUp = new Pose(13.2, 14.7, Math.toRadians(0)); // 16
         farPickUp = new Pose(7.5, 14.7, Math.toRadians(0)); //16
-        pre2ndDropYR2 = new Pose(36.0, (71), Math.toRadians(0));
-        slow2ndDropYR2 = new Pose(43, (75), Math.toRadians(0));
+        pre2ndDropYR2 = new Pose(36.0, (76), Math.toRadians(0));
+        slow2ndDropYR2 = new Pose(43, (80), Math.toRadians(0));
         pre2ndDrop = new Pose(36.0, (70.0 + yOffset), Math.toRadians(0));
         slow2ndDrop = new Pose(43, (74.0 + yOffset), Math.toRadians(0));
         slideToTheRight = new Pose(43, 69.2, Math.toRadians(0));
