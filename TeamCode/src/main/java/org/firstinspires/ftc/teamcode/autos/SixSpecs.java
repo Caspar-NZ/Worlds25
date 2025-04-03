@@ -93,12 +93,12 @@ public class SixSpecs extends OpMode {
         startPose= new Pose(7.32, 68.4, Math.toRadians(0));
         pre1stDrop = new Pose(36.6, 70.2, Math.toRadians(0)); //36.6 //77.2
         slow1stDrop = new Pose(42.2, 70.2, Math.toRadians(0));//42.2 //77.2
-        preFirstSample = new Pose(35, 54, Math.toRadians(0));//48
+        preFirstSample = new Pose(35, 53.5, Math.toRadians(0));//48
         firstSample = new Pose(43, 35, Math.toRadians(0));//y32.5
-        firstPush = new Pose(16, 27, Math.toRadians(0));
+        firstPush = new Pose(17.5, 27, Math.toRadians(0));
         secondSample = new Pose(43, 27, Math.toRadians(0));
-        preSecondPush = new Pose(43, 20.3, Math.toRadians(0));
-        secondPush = new Pose(16, 20.3, Math.toRadians(0));
+        preSecondPush = new Pose(43, 20.6, Math.toRadians(0));
+        secondPush = new Pose(17.5, 20.3, Math.toRadians(0));
         thirdSample = new Pose(35.0, 19.9, Math.toRadians(0));
         preThirdPush = new Pose(43, 14.7, Math.toRadians(0));
         preFarPickUp = new Pose(13.2, 14.7, Math.toRadians(0)); // 16
@@ -107,21 +107,21 @@ public class SixSpecs extends OpMode {
         slow2ndDropYR2 = new Pose(43, (75), Math.toRadians(0));
         pre2ndDrop = new Pose(36.0, (70.0 + yOffset), Math.toRadians(0));
         slow2ndDrop = new Pose(43, (74.0 + yOffset), Math.toRadians(0));
-        slideToTheRight = new Pose(43, 69.5, Math.toRadians(0));
+        slideToTheRight = new Pose(43, 69.2, Math.toRadians(0));
         preClosePickUpless2 = new Pose(14, 49, Math.toRadians(0));
         closePickUpless2 = new Pose(7.4, 43, Math.toRadians(0));
-        preClosePickUp = new Pose(14, 51, Math.toRadians(0));
+        preClosePickUp = new Pose(14, 47, Math.toRadians(0));
         closePickUp = new Pose(7.4, 45, Math.toRadians(0));
         closePickUpx6 = new Pose(7.1, 45, Math.toRadians(0));
         closePickUpx65 = new Pose(7.4, 45, Math.toRadians(0));
         pre3rdDrop = new Pose(36.0, 70.0, Math.toRadians(0)); //68.0
         slow3rdDrop = new Pose(41.9, 74, Math.toRadians(0)); //72.0
-        pre4thDrop = new Pose(36.0, 71.0, Math.toRadians(0)); //67.0
-        slow4thDrop = new Pose(41.9, 75, Math.toRadians(0)); //71.0
-        pre5thDrop = new Pose(36.0, 72, Math.toRadians(0)); //66.0
-        slow5thDrop = new Pose(41.9, 76, Math.toRadians(0)); //70.0
+        pre4thDrop = new Pose(36.0, 72.0, Math.toRadians(0)); //67.0
+        slow4thDrop = new Pose(41.9, 76, Math.toRadians(0)); //71.0
+        pre5thDrop = new Pose(36.0, 73, Math.toRadians(0)); //66.0
+        slow5thDrop = new Pose(41.9, 77, Math.toRadians(0)); //70.0
         pre6thDrop = new Pose(38.0, 75, Math.toRadians(0)); //75.0
-        slow6thDrop = new Pose(43.4, 79, Math.toRadians(0));//79.0 x43.4
+        slow6thDrop = new Pose(43.4, 80, Math.toRadians(0));//79.0 x43.4
         parkPose= new Pose(15.0, 35.0, Math.toRadians(0)); //was 10 40
 
 
@@ -508,7 +508,7 @@ public class SixSpecs extends OpMode {
 
 
             case 14:
-                if (!follower.isBusy() || follower.getPose().getY() <= 71) {
+                if (!follower.isBusy() || follower.getPose().getY() <= 72) {
                     outtake.clawOpen(true);
                     outtake.specDropOpen(false);
                     delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 1), 100);
@@ -716,7 +716,7 @@ public class SixSpecs extends OpMode {
             // CASE 26: Monitor preSixthSpec.
             // Diagonal move (dominant X increase); cancel when X reaches about 30.
             case 29:
-                if (!follower.isBusy() || follower.getPose().getX() >= 36.0) { //was34
+                if (!follower.isBusy() || follower.getPose().getX() >= 37.0) { //was34//was 36
                     //delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750), 200);
                     slowdown = 0.3;
                     follower.followPath(sixthSpec, true);
@@ -929,12 +929,16 @@ public class SixSpecs extends OpMode {
             telemetry.addData("yOffset", data);
             telemetry.addData("xOffset", xOffset);
             telemetry.addData("Alliance", AllianceInfo.alliance.toString());
+            telemetry.addData("slide", slideTarget);
             telemetry.update();
         } else {
             telemetry.addData("yOffset", direction, Math.abs(yOffset), " inches");
             telemetry.addData("xOffset", xOffset);
+            telemetry.addData("slide", slideTarget);
             telemetry.addData("Alliance", AllianceInfo.alliance.toString());
             telemetry.addData("Ready to start!", "");
+
+
             telemetry.update();
         }
     }
