@@ -883,7 +883,7 @@ public class SixSpecs extends OpMode {
 // Increase yOffset (dpad right) if not exceeding +4
             if ((currentGamepad1.dpad_right && !previousGamepad1.dpad_right) ||
                     (currentGamepad2.dpad_right && !previousGamepad2.dpad_right)) {
-                if (yOffset > -4.5) {
+                if (yOffset > -3.0) {
                     yOffset -= 0.5;
                 }
             }
