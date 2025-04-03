@@ -437,7 +437,8 @@ public class SixSpecs extends OpMode {
                 if (follower.getPose().getX() >= 40.80 && !YR2){
                     verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750);
                 }
-                if ((follower.getPose().getX() >= 37.0 && readyToIntake && !YR2) || ((follower.getPose().getY() <= yOffset+0.8 || !follower.isBusy()) && YR2)){
+                if ((follower.getPose().getX() >= 37.0 && readyToIntake && !YR2) || ((follower.getPose().getY() <= yOffset+1 || !follower.isBusy()) && YR2)){
+                    verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750);
                     if (sampleTimer == 0.0) {
                         sampleTimer = getRuntime();
                     }
