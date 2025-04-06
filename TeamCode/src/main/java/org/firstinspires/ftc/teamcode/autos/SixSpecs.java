@@ -94,7 +94,7 @@ public class SixSpecs extends OpMode {
         pre1stDrop = new Pose(36.6, 70.2, Math.toRadians(0)); //36.6 //77.2
         slow1stDrop = new Pose(42.2, 70.2, Math.toRadians(0));//42.2 //77.2
         preFirstSample = new Pose(35, 53.5, Math.toRadians(0));//48
-        firstSample = new Pose(43, 35.4, Math.toRadians(0));//y32.5
+        firstSample = new Pose(43, 35.6, Math.toRadians(0));//y32.5
         firstPush = new Pose(17.5, 27, Math.toRadians(0));
         secondSample = new Pose(43, 27, Math.toRadians(0));
         preSecondPush = new Pose(43, 20.6, Math.toRadians(0));
@@ -119,7 +119,7 @@ public class SixSpecs extends OpMode {
         pre4thDrop = new Pose(36.0, 72.0, Math.toRadians(0)); //67.0
         slow4thDrop = new Pose(41.9, 76, Math.toRadians(0)); //71.0
         pre5thDrop = new Pose(36.0, 73, Math.toRadians(0)); //66.0
-        slow5thDrop = new Pose(41.9, 79, Math.toRadians(0)); //70.0
+        slow5thDrop = new Pose(41.6, 79, Math.toRadians(0)); //70.0
         pre6thDrop = new Pose(38.0, 75, Math.toRadians(0)); //75.0
         slow6thDrop = new Pose(43.4, 81, Math.toRadians(0));//79.0 x43.4
         parkPose= new Pose(15.0, 35.0, Math.toRadians(0)); //was 10 40
@@ -274,7 +274,7 @@ public class SixSpecs extends OpMode {
             case 0:
                 slowdown = 1.0;
                 follower.followPath(preFirstSpec, false);
-                verticalSlides.setPosition(verticalSlides.MIN_POSITION + 420);
+                verticalSlides.setPosition(verticalSlides.MIN_POSITION + 440);
                 outtake.hookAtIntake(false, false);
                 setPathState(pathState + 1);
                 outtake.setSampleOutOfWay();
@@ -310,7 +310,7 @@ public class SixSpecs extends OpMode {
             // CASE 3: Monitor toFirstSample.
             // This diagonal path (dominant Y drop) is cancelled early when Y reaches 50.
             case 3:
-                if (!follower.isBusy() || (follower.getPose().getY() <39.5)) {
+                if (!follower.isBusy() || (follower.getPose().getY() <40.5)) {//39.5
                     slowdown = 1.0;
                     follower.followPath(pushFirstSample, false);
                     setPathState(pathState + 1);
@@ -534,7 +534,7 @@ public class SixSpecs extends OpMode {
                         outtake.setSpecDropAtAuto();
                         //outtake.specDropAtIntakePos(false);
                         delayedRun(() -> outtake.specDropAtIntakePos(true), 400);
-                        delayedRun(() -> outtake.specDropOpen(false), 600);
+                        delayedRun(() -> outtake.specDropOpen(false), 800);
                     slowdown = 0.3;
                     follower.followPath(secondPickUp, true);
                     setPathState(pathState + 1);
