@@ -23,6 +23,7 @@ public class horiSlides {
 
     private final BasicPID pidController;
     double Power;
+    public double slowdown = 1.0;
 
     public horiSlides(HardwareMap hardwareMap) {
         leftHori = hardwareMap.get(DcMotor.class, "leftHori");
@@ -97,13 +98,16 @@ public class horiSlides {
 
         Power = powerLeft;
 
-        leftHori.setPower(-powerLeft);
-        rightHori.setPower(-powerRight);
+        leftHori.setPower((-powerLeft * slowdown));
+        rightHori.setPower((-powerRight * slowdown));
     }
     public boolean magResult(){
         return leftMag.isPressed() || rightMag.isPressed();
     }
     public double getCurrentPosition() {
         return ((leftHori.getCurrentPosition() - MIN_POSITION) + (rightHori.getCurrentPosition() - MIN_POSITION)) / 2.0;
+    }
+    public void runSlow(double speed){
+        slowdown = speed;
     }
 }

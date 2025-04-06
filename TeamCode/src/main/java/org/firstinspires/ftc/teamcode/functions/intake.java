@@ -56,6 +56,8 @@ public class intake {
     private long timedEndTimeMs = 0;
     public TargetState target1 = TargetState.NONE;
     public TargetState target2 = TargetState.NONE;
+    public boolean startSlowDropIn = false;
+    private double LHPos, RHPos;
 
 
     // --- Constructor ---
@@ -96,6 +98,17 @@ public class intake {
                 leftIntakePower = 0;
                 rightIntakePower = 0;
                 timedIntakeActive = false;
+            }
+        }
+
+        if (startSlowDropIn){
+            if (LHPos <= 0.32){
+                LHPos = LHPos + 0.03;
+                RHPos = RHPos - 0.03;
+                leftRotateTarget = LHPos;
+                rightRotateTarget = RHPos;
+            } else {
+                startSlowDropIn = false;
             }
         }
 
@@ -256,6 +269,12 @@ public class intake {
     public boolean isTarget(){
         TargetState detected = getDetectedColor();
         return (detected == target1 || detected == target2);
+    }
+
+    public void slowDropIn(){
+        startSlowDropIn = true;
+        LHPos = LEFT_DOWN_TUCKED;
+        RHPos = RIGHT_DOWN_TUCKED;
     }
 
 }
