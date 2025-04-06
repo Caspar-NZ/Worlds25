@@ -88,11 +88,11 @@ public class Samples extends OpMode {
     public void buildPaths() {
         startPose= new Pose(7.3, 112, Math.toRadians(0));
         firstDrop = new Pose(8, 128, Math.toRadians(0));
-        firstPickUp = new Pose(24, 122, Math.toRadians(0));
+        firstPickUp = new Pose(24, 121.2, Math.toRadians(0));
         secondDrop = new Pose(7.3, 128, Math.toRadians(0));
         secondPickUp = new Pose(24, 129.5, Math.toRadians(0));
         thirdDrop = new Pose(7.3, 128, Math.toRadians(0));
-        thirdPickup = new Pose(34, 130, Math.toRadians(50));
+        thirdPickup = new Pose(34, 130, Math.toRadians(42));
         fourthDrop = new Pose(7.3, 128, Math.toRadians(0));
 
         towardsSub = new Pose(65, 108, Math.toRadians(-90));
@@ -225,7 +225,7 @@ public class Samples extends OpMode {
             // firstDelivery: from startPose (7.3,112) to firstDrop (7.3,130) – moving along Y.
             case 0:
                 verticalSlides.setPosition(verticalSlides.MIN_POSITION + 1169);
-                if (delayTimer+0.4 <getRuntime()) {
+                if (delayTimer+0.3 <getRuntime()) {
                     slowdown = 1.0;
                     follower.followPath(firstDelivery, true);
                     horizontalSlides.setPosition(150);
@@ -268,7 +268,7 @@ public class Samples extends OpMode {
                             delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 1169), 800);
                             runOnce = false;
                         }
-                        if (delayTimer+0.8 <getRuntime()) {
+                        if (delayTimer+0.65 <getRuntime()) {
                             slowdown = 0.5;
                             follower.followPath(secondDelivery, true);
                             setPathState(pathState + 1);
@@ -310,7 +310,7 @@ public class Samples extends OpMode {
                             delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 1169), 800);
                             runOnce = false;
                         }
-                        if (delayTimer+1.4 <getRuntime()) {
+                        if (delayTimer+0.8  <getRuntime()) {
                             slowdown = 0.5;
                             follower.followPath(thirdDelivery, true);
                             setPathState(pathState + 1);
@@ -354,7 +354,7 @@ public class Samples extends OpMode {
                             runOnce = false;
                         }
                         if (delayTimer+0.8 <getRuntime()) {
-                            slowdown = 0.5;
+                            slowdown = 0.6;
                             follower.followPath(fourthDelivery, true);
                             setPathState(pathState + 1);
                             timeout = getRuntime();
@@ -366,10 +366,12 @@ public class Samples extends OpMode {
             // CASE 7: Check fourthDelivery (from thirdPickup (28,128) to fourthDrop (7.3,130)) – X decreasing; cancel when X <= 8.3.
             // Then start goingToSub.
             case 7:
-                if (!follower.isBusy() || follower.getPose().getX() <= 8.3) {
+                if (!follower.isBusy() || follower.getPose().getX() <= 8) {
+
                     outtake.sampleReleaseOpen(true);
                     delayedRun(() -> outtake.sampleReleaseOpen(false), 500);
-                    delayedRun(() -> outtake.sampleAtIntakePos(true), 500);
+                    delayedRun(() -> outtake.sampleAtIntakePos(false), 500);
+                    delayedRun(() -> outtake.specDropAtIntakePos(true), 500);
                     delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 1), 500);
                     slowdown = 1.0;
                     follower.followPath(goingToSub, false);
@@ -385,7 +387,7 @@ public class Samples extends OpMode {
                 if (!follower.isBusy() || follower.getPose().getX() >= 69) {
                     slowdown = 1.0;
                     follower.followPath(preSub, false);
-                    setPathState(pathState + 1);
+                    setPathState(pathState + 60);
                     timeout = getRuntime();
                 }
                 break;

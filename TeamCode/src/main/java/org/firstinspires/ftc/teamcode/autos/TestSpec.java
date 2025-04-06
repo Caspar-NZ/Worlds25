@@ -7,14 +7,11 @@ import static org.firstinspires.ftc.teamcode.functions.intake.RotationMode.TUCKE
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
-import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.BezierLine;
-import com.pedropathing.pathgen.Path;
 import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -23,12 +20,10 @@ import org.firstinspires.ftc.teamcode.functions.AllianceColour;
 import org.firstinspires.ftc.teamcode.functions.AllianceInfo;
 import org.firstinspires.ftc.teamcode.functions.TargetState;
 import org.firstinspires.ftc.teamcode.functions.horiSlides;
-import org.firstinspires.ftc.teamcode.functions.outtake;
 import org.firstinspires.ftc.teamcode.functions.intake;
+import org.firstinspires.ftc.teamcode.functions.outtake;
 import org.firstinspires.ftc.teamcode.functions.vertSlide;
-import org.firstinspires.ftc.teamcode.teleop.teleOp;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -37,8 +32,8 @@ import java.util.concurrent.TimeUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@Autonomous(name = "SixSpecs", group = "Worlds", preselectTeleOp="TeleOp")
-public class SixSpecs extends OpMode {
+@Autonomous(name = "TestSpecs", group = "Worlds", preselectTeleOp="TeleOp")
+public class TestSpec extends OpMode {
     Gamepad currentGamepad1 = new Gamepad();
     Gamepad currentGamepad2 = new Gamepad();
     Gamepad previousGamepad1 = new Gamepad();
@@ -304,6 +299,62 @@ public class SixSpecs extends OpMode {
                     slowdown = 1.0; //was1.0
                     follower.followPath(toFirstSample, false);
                     setPathState(pathState + 1);
+                    double currentTime = getRuntime();
+
+                    TargetState detectedColor = intake.getDetectedColor();
+                    TargetState previousIntake = thisIntake;
+                    thisIntake = detectedColor;
+
+                    doubleDouble = Objects.equals(previousIntake, thisIntake);
+
+                    doubleDoubleTarget = doubleDouble && intake.isTarget();
+
+                    if (!goingHome) {
+                        horizontalSlides.setPosition(horizontalSlides.getCurrentPosition() + 12);
+                        if (detectedColor != TargetState.NONE && detectedColor != TargetState.MIXED && doubleDouble) {
+                            if (doubleDoubleTarget) {
+                                // TARGET PIECE: Stop intake immediately and start goHome sequence.
+                                intake.setSpeed(0, 0);
+                                goingHome = true;
+                                rejecting = false;
+                            } else {
+                                // NON-TARGET: Reject it.
+                                // Force both blockers open so the piece passes through.
+                                intake.setInnerBlockOpen(true);
+                                intake.setOuterBlockOpen(true);
+                                // Use full-speed rejection (in the same direction as the manual command).
+                                intake.setSpeed(1, 1);
+                                rejecting = true;
+                                rejectionEndTime = currentTime;
+                            }
+                        } else {
+                            // No piece detected.
+                            if (rejecting) {
+                                // Wait 0.2 sec after the piece disappears before restoring manual control.
+                                if (currentTime - rejectionEndTime >= 0.05) {
+                                    intake.setInnerBlockOpen(false);
+                                    rejecting = false;
+                                } else {
+                                    intake.setSpeed(1, 1);
+                                }
+                            } else {
+                                intake.setSpeed(1,1);
+
+                            }
+                        }
+                    } else {
+                        intake.setRotation(TRANSFER);
+                        horizontalSlides.setPosition(horizontalSlides.MIN_POSITION + 1);
+                        sampleCollected = true;
+                    }
+                    if ((horizontalSlides.getCurrentPosition() > (horizontalSlides.MIN_POSITION + 800)) || (sampleTimer+4.0 <getRuntime())) {
+                        intake.setRotation(TRANSFER);
+                        horizontalSlides.setPosition(horizontalSlides.MIN_POSITION + 1);
+                        if (detectedColor != TargetState.NONE && detectedColor != TargetState.MIXED && doubleDouble && !doubleDoubleTarget){
+                            intake.setTimedIntake(-1,-1,2);
+                        }
+                        timeoutCollection = true;
+                    }
                 }
                 break;
 
@@ -883,7 +934,7 @@ public class SixSpecs extends OpMode {
 // Increase yOffset (dpad right) if not exceeding +4
             if ((currentGamepad1.dpad_right && !previousGamepad1.dpad_right) ||
                     (currentGamepad2.dpad_right && !previousGamepad2.dpad_right)) {
-                if (yOffset > -3.0) {
+                if (yOffset > -4.5) {
                     yOffset -= 0.5;
                 }
             }
