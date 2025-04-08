@@ -279,26 +279,35 @@ public class TestSpec extends OpMode {
             // Cancel early when the robot’s X reaches 34.5.
             case 1:
                 if (!follower.isBusy() || follower.getPose().getX() >= 25.8) { //26.5
-                    slowdown = 0.2;
+                    slowdown = 0.5;
                     follower.followPath(firstSpec, true);
                     //delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750), 700);
                     setPathState(pathState + 1);
+                    intake.setInnerBlockOpen(true);
+                    delayedRun(() -> horizontalSlides.setPosition(horizontalSlides.MIN_POSITION + slideTarget +80), 100);
+                    delayedRun(() -> intake.setAutoPos(), 450);
+                    delayedRun(() -> horizontalSlides.setPosition(horizontalSlides.MIN_POSITION + slideTarget +120), 450);
+                    delayedRun(() -> intake.setRotation(INTAKE), 750);
+                    delayedRun(() -> intake.setInnerBlockOpen(false), 850);
+                    delayedRun(() -> horizontalSlides.setPosition(horizontalSlides.MIN_POSITION + slideTarget), 650);
+                    delayedRun(() -> readyToIntake = true,850);
+                    delayedRun(() -> intake.setTimedIntake(-1, -1, 0.5),400);
+
                     timeout = getRuntime();
                 }
                 break;
 
             // CASE 2: Wait for firstSpec (slow speed) to complete.
             case 2:
-                if (follower.getPose().getX() >= 41.50){
+
+                if (follower.getPose().getX() >= 40.80 && !YR2){
                     verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750);
                 }
-                if (!follower.isBusy()) {
-                    outtake.clawOpen(true);
-                    delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 1), 200);
-                    delayedRun(() -> outtake.hookAtIntake(true, false), 200);
-                    slowdown = 1.0; //was1.0
-                    follower.followPath(toFirstSample, false);
-                    setPathState(pathState + 1);
+                if ((follower.getPose().getX() >= 37.0 && readyToIntake && !YR2) || ((follower.getPose().getY() <= yOffset+1 || !follower.isBusy()) && YR2)){
+                    verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750);
+                    if (sampleTimer == 0.0) {
+                        sampleTimer = getRuntime();
+                    }
                     double currentTime = getRuntime();
 
                     TargetState detectedColor = intake.getDetectedColor();
@@ -355,12 +364,62 @@ public class TestSpec extends OpMode {
                         }
                         timeoutCollection = true;
                     }
+
+                    if (sampleCollected || timeoutCollection) {
+                        slowdown = 1.0;
+                        follower.followPath(preSecondPickUp, false);
+                        setPathState(pathState + 1);
+                    }
+                }
+                break;
+
+            // CASE 12: Monitor preSecondPickUp.
+            // Diagonal move with dominant X decrease; cancel when X ≤ 22.
+            case 3:
+                if (!follower.isBusy() || follower.getPose().getX() <= 16) {
+                    outtake.specDropOpen(true);
+                    outtake.setSpecDropAtAuto();
+                    //outtake.specDropAtIntakePos(false);
+                    delayedRun(() -> outtake.specDropAtIntakePos(true), 400);
+                    delayedRun(() -> outtake.specDropOpen(false), 800);
+                    slowdown = 0.3;
+                    follower.followPath(secondPickUp, true);
+                    setPathState(pathState + 1);
+                    timeout = getRuntime();
+                    delayedRun(() -> outtake.clawOpen(false), 250);
+                }
+                break;
+
+            // CASE 13: Wait for secondPickUp (precision pickup) to complete.
+            case 4:
+                if (!follower.isBusy() || getRuntime() > timeout + 0.3) {
+                    //outtake.clawOpen(false);
+                    delayedRun(() -> outtake.hookAtIntake(false, false), 70);
+                    delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 440), 150);
+                    slowdown = 1.0;
+                    follower.followPath(preThirdSpec, false);
+                    setPathState(pathState + 1);
+                }
+                break;
+
+            case 5:
+                if (follower.getPose().getX() >= 40.80){
+                    verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750);
+                }
+                if (!follower.isBusy() || getRuntime() > timeout + 0.5) {
+
+                    outtake.clawOpen(true);
+                    delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 1), 100);
+                    delayedRun(() -> outtake.hookAtIntake(true, false), 100);
+                    slowdown = 1.0;
+                    follower.followPath(toFirstSample, false);
+                    setPathState(pathState + 1);
                 }
                 break;
 
             // CASE 3: Monitor toFirstSample.
             // This diagonal path (dominant Y drop) is cancelled early when Y reaches 50.
-            case 3:
+            case 6:
                 if (!follower.isBusy() || (follower.getPose().getY() <40.5)) {//39.5
                     slowdown = 1.0;
                     follower.followPath(pushFirstSample, false);
@@ -370,14 +429,14 @@ public class TestSpec extends OpMode {
 
             // CASE 4: Monitor pushFirstSample.
             // Movement mainly along X decreasing; cancel when X ≤ 22.
-            case 4:
+            case 7:
                 if (!follower.isBusy() || follower.getPose().getX() <= 19.50) {
                     slowdown = 1.0;
                     follower.followPath(toSecondSample, false);
                     setPathState(pathState + 1);
                 }
                 break;
-            case 5:
+            case 8:
                 if (!follower.isBusy() || follower.getPose().getX() >= 31.0) {
                     slowdown = 1.0;
                     follower.followPath(moveYTo2ndSample, false);
@@ -386,7 +445,7 @@ public class TestSpec extends OpMode {
                 break;
             // CASE 5: Monitor toSecondSample.
             // Movement along X increasing; cancel when X reaches about 33.
-            case 6:
+            case 9:
                 if (!follower.isBusy() || (follower.getPose().getY() <= 26)) {
                     slowdown = 1.0;
                     follower.followPath(pushSecondSample, false);
@@ -396,7 +455,7 @@ public class TestSpec extends OpMode {
 
             // CASE 6: Monitor pushSecondSample.
             // Composite path ending near secondPush; cancel when X drops to ~20.
-            case 7:
+            case 10:
                 if (!follower.isBusy() || follower.getPose().getX() <= 19.0) {
                     slowdown = 1.0;
                     follower.followPath(toThirdSample, false);
@@ -404,7 +463,7 @@ public class TestSpec extends OpMode {
                 }
                 break;
 
-            case 8:
+            case 11:
                 if (!follower.isBusy() || follower.getPose().getX() >= 31.0) {
                     slowdown = 1.0;
                     follower.followPath(moveYTo3rdSample, false);
@@ -414,7 +473,7 @@ public class TestSpec extends OpMode {
 
             // CASE 7: Monitor toThirdSample.
             // Movement along X increasing; cancel when X reaches about 33.
-            case 9:
+            case 12:
                 if (!follower.isBusy() || follower.getPose().getY() >= 15.5) {
                     slowdown = 1.0;
                     follower.followPath(pushThirdSample, false);
@@ -424,7 +483,7 @@ public class TestSpec extends OpMode {
 
             // CASE 8: Monitor pushThirdSample.
             // Composite path moving from thirdSample to preFarPickUp; cancel early when X is near 15.
-            case 10:
+            case 13:
                 if (!follower.isBusy() || follower.getPose().getX() <= 16.5) { //16
                     slowdown = 0.3;
                     follower.followPath(firstPickUp, true);
@@ -437,7 +496,7 @@ public class TestSpec extends OpMode {
                 break;
 
             // CASE 9: Wait for firstPickUp (precision move) to complete.
-            case 11:
+            case 14:
                 if (!follower.isBusy() || getRuntime() > timeout + 0.3) {
                     outtake.clawOpen(false);
 
@@ -462,7 +521,7 @@ public class TestSpec extends OpMode {
             // CASE 10: Monitor preSecondSpec.
             // Diagonal move (dominant Y increase); cancel early when Y reaches about 60.
 
-            case 12:
+            case 15:
                 if (!follower.isBusy() || follower.getPose().getX() >= 35.0) {
                     intake.setInnerBlockOpen(true);
                     delayedRun(() -> horizontalSlides.setPosition(horizontalSlides.MIN_POSITION + slideTarget +80), 100);
@@ -484,7 +543,7 @@ public class TestSpec extends OpMode {
 
 
             // CASE 11: Wait for secondSpec (slow speed) to complete.
-            case 13:
+            case 16:
                 if (follower.getPose().getX() >= 40.80 && !YR2){
                     verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750);
                 }
@@ -559,7 +618,7 @@ public class TestSpec extends OpMode {
                 break;
 
 
-            case 14:
+            case 17:
                 if (!follower.isBusy() || follower.getPose().getY() <= 72) {
                     outtake.clawOpen(true);
                     outtake.specDropOpen(false);
@@ -579,7 +638,7 @@ public class TestSpec extends OpMode {
 
             // CASE 12: Monitor preSecondPickUp.
             // Diagonal move with dominant X decrease; cancel when X ≤ 22.
-            case 15:
+            case 18:
                 if (!follower.isBusy() || follower.getPose().getX() <= 16) {
                         outtake.specDropOpen(true);
                         outtake.setSpecDropAtAuto();
@@ -595,7 +654,7 @@ public class TestSpec extends OpMode {
                 break;
 
             // CASE 13: Wait for secondPickUp (precision pickup) to complete.
-            case 16:
+            case 19:
                 if (!follower.isBusy() || getRuntime() > timeout + 0.3) {
                     //outtake.clawOpen(false);
                     delayedRun(() -> outtake.hookAtIntake(false, false), 70);
@@ -608,7 +667,7 @@ public class TestSpec extends OpMode {
 
             // CASE 14: Monitor preThirdSpec.
             // Diagonal move (dominant X increase); cancel when X reaches about 30.
-            case 17:
+            case 20:
                 if (!follower.isBusy() || follower.getPose().getX() >= 35.0) {
 
                     //delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750), 200);
@@ -620,7 +679,7 @@ public class TestSpec extends OpMode {
                 break;
 
             // CASE 15: Wait for thirdSpec (slow speed) to complete.
-            case 18:
+            case 21:
                 if (follower.getPose().getX() >= 40.80){
                     verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750);
                 }
@@ -637,7 +696,7 @@ public class TestSpec extends OpMode {
 
             // CASE 16: Monitor preThirdPickUp.
             // Diagonal move with dominant X decrease; cancel when X ≤ 22.
-            case 19:
+            case 22:
                 if (!follower.isBusy() || follower.getPose().getX() <= 16) {
                     slowdown = 0.3;
                     follower.followPath(thirdPickUp, true);
@@ -649,7 +708,7 @@ public class TestSpec extends OpMode {
                 break;
 
             // CASE 17: Wait for thirdPickUp (precision pickup) to complete.
-            case 20:
+            case 23:
                 if (!follower.isBusy() || getRuntime() > timeout + 0.3) {
                     //outtake.clawOpen(false);
                     delayedRun(() -> outtake.hookAtIntake(false, false), 70);
@@ -662,7 +721,7 @@ public class TestSpec extends OpMode {
 
             // CASE 18: Monitor preFourthSpec.
             // Diagonal move (dominant X increase); cancel when X reaches about 30.
-            case 21:
+            case 24:
                 if (!follower.isBusy() || follower.getPose().getX() >= 35.0) {
 
                     //delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750), 200);
@@ -674,7 +733,7 @@ public class TestSpec extends OpMode {
                 break;
 
             // CASE 19: Wait for fourthSpec (slow speed) to complete.
-            case 22:
+            case 25:
                 if (follower.getPose().getX() >= 40.80){
                     verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750);
                 }
@@ -691,7 +750,7 @@ public class TestSpec extends OpMode {
 
             // CASE 20: Monitor preFourthPickUp.
             // Diagonal move with dominant X decrease; cancel when X ≤ 22.
-            case 23:
+            case 26:
                 if (!follower.isBusy() || follower.getPose().getX() <= 15.8) {
                     slowdown = 0.3;
                     follower.followPath(fourthPickUp, true);
@@ -702,7 +761,7 @@ public class TestSpec extends OpMode {
                 break;
 
             // CASE 21: Wait for fourthPickUp (precision pickup) to complete.
-            case 24:
+            case 27:
                 if (!follower.isBusy() || getRuntime() > timeout + 0.3) {
                     outtake.clawOpen(false);
                     delayedRun(() -> outtake.hookAtIntake(false, false), 70);
@@ -715,7 +774,7 @@ public class TestSpec extends OpMode {
 
             // CASE 22: Monitor preFithSpec.
             // Diagonal move (dominant X increase); cancel when X reaches about 30.
-            case 25:
+            case 28:
                 if (!follower.isBusy() || follower.getPose().getX() >= 35.0) {
                     //delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750), 200);
                     slowdown = 0.3;
@@ -726,7 +785,7 @@ public class TestSpec extends OpMode {
                 break;
 
             // CASE 23: Wait for fithSpec (slow speed) to complete.
-            case 26:
+            case 29:
                 if (follower.getPose().getX() >= 40.80){
                     verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750);
                 }
@@ -743,7 +802,7 @@ public class TestSpec extends OpMode {
             // CASE 24: Monitor preFithPickUp.
             // This path goes from preClosePickUp (X ≈ 12) toward closePickUp (X ≈ 8).
             // Cancel early when the robot’s X reaches 9.0 or less.
-            case 27:
+            case 30:
                 if (!follower.isBusy() || follower.getPose().getX() <= 16.2) {
                     slowdown = 0.3;
                     follower.followPath(fithPickUp, true);
@@ -754,7 +813,7 @@ public class TestSpec extends OpMode {
                 break;
 
             // CASE 25: Wait for fithPickUp (precision pickup) to complete.
-            case 28:
+            case 31:
                 if (!follower.isBusy() || getRuntime() > timeout + 0.3) {
                     outtake.clawOpen(false);
                     delayedRun(() -> outtake.hookAtIntake(false, false), 70);
@@ -767,7 +826,7 @@ public class TestSpec extends OpMode {
 
             // CASE 26: Monitor preSixthSpec.
             // Diagonal move (dominant X increase); cancel when X reaches about 30.
-            case 29:
+            case 32:
                 if (!follower.isBusy() || follower.getPose().getX() >= 37.0) { //was34//was 36
                     //delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750), 200);
                     slowdown = 0.3;
@@ -778,7 +837,7 @@ public class TestSpec extends OpMode {
                 break;
 
             // CASE 27: Wait for sixthSpec (slow speed) to complete, then start the parking path.
-            case 30:
+            case 33:
                 if (follower.getPose().getX() >= 40.80){
                     verticalSlides.setPosition(verticalSlides.MIN_POSITION + 680);
                 }

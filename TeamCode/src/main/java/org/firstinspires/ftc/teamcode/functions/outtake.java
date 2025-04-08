@@ -12,7 +12,7 @@ public class outtake {
     final private double clawOpen = 0.0;
     final private double clawClosed = 0.22;
     final private double specDropAtIntake = 1.0;
-    final private double specDropAtAuto = 0.88;
+    final private double specDropAtAuto = 0.82; //was 0.88
     final private double specDropAtDelivery = 0.76;
     final private double specReleaseBlocking = 0.05;
     final private double specReleaseOpen = 0.32;

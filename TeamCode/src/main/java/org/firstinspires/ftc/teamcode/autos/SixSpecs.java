@@ -94,11 +94,12 @@ public class SixSpecs extends OpMode {
         pre1stDrop = new Pose(36.6, 70.2, Math.toRadians(0)); //36.6 //77.2
         slow1stDrop = new Pose(42.2, 70.2, Math.toRadians(0));//42.2 //77.2
         preFirstSample = new Pose(35, 53.5, Math.toRadians(0));//48
-        firstSample = new Pose(43, 35.6, Math.toRadians(0));//y32.5
+        //prePreFirstSample = new Pose(46, 30.0, Math.toRadians(0));
+        firstSample = new Pose(48, 30.0, Math.toRadians(-20));//y35.6
         firstPush = new Pose(17.5, 27, Math.toRadians(0));
         secondSample = new Pose(43, 27, Math.toRadians(0));
         preSecondPush = new Pose(43, 20.6, Math.toRadians(0));
-        secondPush = new Pose(17.5, 20.3, Math.toRadians(0));
+        secondPush = new Pose(17.0, 20.3, Math.toRadians(0));
         thirdSample = new Pose(35.0, 19.9, Math.toRadians(0));
         preThirdPush = new Pose(43, 14.7, Math.toRadians(0));
         preFarPickUp = new Pose(13.2, 14.7, Math.toRadians(0)); // 16
@@ -114,14 +115,14 @@ public class SixSpecs extends OpMode {
         closePickUp = new Pose(7.4, 45, Math.toRadians(0));
         closePickUpx6 = new Pose(7.1, 45, Math.toRadians(0));
         closePickUpx65 = new Pose(7.4, 45, Math.toRadians(0));
-        pre3rdDrop = new Pose(36.0, 70.0, Math.toRadians(0)); //68.0
-        slow3rdDrop = new Pose(41.9, 74, Math.toRadians(0)); //72.0
+        pre3rdDrop = new Pose(36.0, 68.0, Math.toRadians(0)); //68.0
+        slow3rdDrop = new Pose(41.9, 72, Math.toRadians(0)); //72.0
         pre4thDrop = new Pose(36.0, 72.0, Math.toRadians(0)); //67.0
         slow4thDrop = new Pose(41.9, 76, Math.toRadians(0)); //71.0
-        pre5thDrop = new Pose(36.0, 73, Math.toRadians(0)); //66.0
-        slow5thDrop = new Pose(41.6, 79, Math.toRadians(0)); //70.0
-        pre6thDrop = new Pose(38.0, 75, Math.toRadians(0)); //75.0
-        slow6thDrop = new Pose(43.4, 81, Math.toRadians(0));//79.0 x43.4
+        pre5thDrop = new Pose(36.0, 73.5, Math.toRadians(0)); //66.0
+        slow5thDrop = new Pose(41.6, 77.5, Math.toRadians(0)); //70.0
+        pre6thDrop = new Pose(38.0, 78, Math.toRadians(0)); //75.0
+        slow6thDrop = new Pose(43.4, 82, Math.toRadians(0));//79.0 x43.4
         parkPose= new Pose(15.0, 35.0, Math.toRadians(0)); //was 10 40
 
 
@@ -274,7 +275,7 @@ public class SixSpecs extends OpMode {
             case 0:
                 slowdown = 1.0;
                 follower.followPath(preFirstSpec, false);
-                verticalSlides.setPosition(verticalSlides.MIN_POSITION + 440);
+                verticalSlides.setPosition(verticalSlides.MIN_POSITION + 450);
                 outtake.hookAtIntake(false, false);
                 setPathState(pathState + 1);
                 outtake.setSampleOutOfWay();
@@ -283,8 +284,8 @@ public class SixSpecs extends OpMode {
             // CASE 1: Monitor preFirstSpec.
             // Cancel early when the robot’s X reaches 34.5.
             case 1:
-                if (!follower.isBusy() || follower.getPose().getX() >= 25.8) { //26.5
-                    slowdown = 0.2;
+                if (!follower.isBusy() || follower.getPose().getX() >= 26.4) { //26.5
+                    slowdown = 0.15;
                     follower.followPath(firstSpec, true);
                     //delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750), 700);
                     setPathState(pathState + 1);
@@ -294,7 +295,7 @@ public class SixSpecs extends OpMode {
 
             // CASE 2: Wait for firstSpec (slow speed) to complete.
             case 2:
-                if (follower.getPose().getX() >= 41.50){
+                if (follower.getPose().getX() >= 41.20){
                     verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750);
                 }
                 if (!follower.isBusy()) {
@@ -310,7 +311,7 @@ public class SixSpecs extends OpMode {
             // CASE 3: Monitor toFirstSample.
             // This diagonal path (dominant Y drop) is cancelled early when Y reaches 50.
             case 3:
-                if (!follower.isBusy() || (follower.getPose().getY() <40.5)) {//39.5
+                if (!follower.isBusy() || (follower.getPose().getY() <35)) {//39.5
                     slowdown = 1.0;
                     follower.followPath(pushFirstSample, false);
                     setPathState(pathState + 1);
@@ -320,7 +321,7 @@ public class SixSpecs extends OpMode {
             // CASE 4: Monitor pushFirstSample.
             // Movement mainly along X decreasing; cancel when X ≤ 22.
             case 4:
-                if (!follower.isBusy() || follower.getPose().getX() <= 19.50) {
+                if (!follower.isBusy() || follower.getPose().getX() <= 18.5) {
                     slowdown = 1.0;
                     follower.followPath(toSecondSample, false);
                     setPathState(pathState + 1);
@@ -346,7 +347,7 @@ public class SixSpecs extends OpMode {
             // CASE 6: Monitor pushSecondSample.
             // Composite path ending near secondPush; cancel when X drops to ~20.
             case 7:
-                if (!follower.isBusy() || follower.getPose().getX() <= 19.0) {
+                if (!follower.isBusy() || follower.getPose().getX() <= 20.0) {
                     slowdown = 1.0;
                     follower.followPath(toThirdSample, false);
                     setPathState(pathState + 1);
@@ -375,7 +376,7 @@ public class SixSpecs extends OpMode {
             // Composite path moving from thirdSample to preFarPickUp; cancel early when X is near 15.
             case 10:
                 if (!follower.isBusy() || follower.getPose().getX() <= 16.5) { //16
-                    slowdown = 0.3;
+                    slowdown = 0.2;
                     follower.followPath(firstPickUp, true);
 
                     delayedRun(() -> horizontalSlides.setPosition(horizontalSlides.MIN_POSITION + 1), 0);
@@ -535,7 +536,7 @@ public class SixSpecs extends OpMode {
                         //outtake.specDropAtIntakePos(false);
                         delayedRun(() -> outtake.specDropAtIntakePos(true), 400);
                         delayedRun(() -> outtake.specDropOpen(false), 800);
-                    slowdown = 0.3;
+                    slowdown = 0.2;
                     follower.followPath(secondPickUp, true);
                     setPathState(pathState + 1);
                     timeout = getRuntime();
@@ -561,7 +562,7 @@ public class SixSpecs extends OpMode {
                 if (!follower.isBusy() || follower.getPose().getX() >= 35.0) {
 
                     //delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750), 200);
-                    slowdown = 0.3;
+                    slowdown = 0.2;
                     follower.followPath(thirdSpec, true);
                     setPathState(pathState + 1);
                     timeout = getRuntime();
@@ -588,7 +589,7 @@ public class SixSpecs extends OpMode {
             // Diagonal move with dominant X decrease; cancel when X ≤ 22.
             case 19:
                 if (!follower.isBusy() || follower.getPose().getX() <= 16) {
-                    slowdown = 0.3;
+                    slowdown = 0.2;
                     follower.followPath(thirdPickUp, true);
                     //delayedRun(() -> outtake.clawOpen(false), 600);
                     setPathState(pathState + 1);
@@ -615,7 +616,7 @@ public class SixSpecs extends OpMode {
                 if (!follower.isBusy() || follower.getPose().getX() >= 35.0) {
 
                     //delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750), 200);
-                    slowdown = 0.3;
+                    slowdown = 0.2;
                     follower.followPath(fourthSpec, true);
                     setPathState(pathState + 1);
                     timeout = getRuntime();
@@ -642,7 +643,7 @@ public class SixSpecs extends OpMode {
             // Diagonal move with dominant X decrease; cancel when X ≤ 22.
             case 23:
                 if (!follower.isBusy() || follower.getPose().getX() <= 15.8) {
-                    slowdown = 0.3;
+                    slowdown = 0.2;
                     follower.followPath(fourthPickUp, true);
                     setPathState(pathState + 1);
                     timeout = getRuntime();
@@ -665,9 +666,9 @@ public class SixSpecs extends OpMode {
             // CASE 22: Monitor preFithSpec.
             // Diagonal move (dominant X increase); cancel when X reaches about 30.
             case 25:
-                if (!follower.isBusy() || follower.getPose().getX() >= 35.0) {
+                if (!follower.isBusy() || follower.getPose().getX() >= 35.5) {
                     //delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750), 200);
-                    slowdown = 0.3;
+                    slowdown = 0.2;
                     follower.followPath(fithSpec, true);
                     setPathState(pathState + 1);
                     timeout = getRuntime();
@@ -676,7 +677,7 @@ public class SixSpecs extends OpMode {
 
             // CASE 23: Wait for fithSpec (slow speed) to complete.
             case 26:
-                if (follower.getPose().getX() >= 40.80){
+                if (follower.getPose().getX() >= 41){
                     verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750);
                 }
                 if (!follower.isBusy() || getRuntime() > timeout + 0.5) {
@@ -694,7 +695,7 @@ public class SixSpecs extends OpMode {
             // Cancel early when the robot’s X reaches 9.0 or less.
             case 27:
                 if (!follower.isBusy() || follower.getPose().getX() <= 16.2) {
-                    slowdown = 0.3;
+                    slowdown = 0.2;
                     follower.followPath(fithPickUp, true);
                     setPathState(pathState + 1);
                     timeout = getRuntime();
@@ -717,9 +718,9 @@ public class SixSpecs extends OpMode {
             // CASE 26: Monitor preSixthSpec.
             // Diagonal move (dominant X increase); cancel when X reaches about 30.
             case 29:
-                if (!follower.isBusy() || follower.getPose().getX() >= 37.0) { //was34//was 36
+                if (!follower.isBusy() || follower.getPose().getX() >= 38.0) { //was34//was 36
                     //delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 750), 200);
-                    slowdown = 0.3;
+                    slowdown = 0.2;
                     follower.followPath(sixthSpec, true);
                     setPathState(pathState + 1);
                     timeout = getRuntime();
@@ -731,7 +732,7 @@ public class SixSpecs extends OpMode {
                 if (follower.getPose().getX() >= 40.80){
                     verticalSlides.setPosition(verticalSlides.MIN_POSITION + 680);
                 }
-                if (!follower.isBusy() || getRuntime() > timeout + 1.0) {
+                if (!follower.isBusy() || getRuntime() > timeout + 0.9) {
                     outtake.clawOpen(true);
                     delayedRun(() -> verticalSlides.setPosition(verticalSlides.MIN_POSITION + 1), 100);
                     delayedRun(() -> outtake.hookAtIntake(true, false), 200);
