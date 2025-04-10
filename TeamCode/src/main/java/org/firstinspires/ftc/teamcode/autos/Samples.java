@@ -83,7 +83,7 @@ public class Samples extends OpMode {
     double lastYOffset = yOffset;
 
     PathChain firstDelivery, firstCollection, secondDelivery, secondCollection, thirdDelivery, thirdCollection, fourthDelivery, goingToSub, preSub, firstSubPickup, goingToBuckets, preFifthDropLoc, slowFifthDrop, goingToSub2nd, preSub2nd, secondSubPickup, goingToBuckets2nd, preSixthDropLoc, slowSixthDrop, goingToSub3rd, preSub3rd, thirdSubPickup, goingToBuckets3rd, preSeventhDropLoc, slowSeventhDrop;
-    Pose startPose, firstDrop, firstPickUp, secondDrop, secondPickUp, thirdDrop, thirdPickup, fourthDrop, towardsSub, preFirstSubCollection, firstSubCollection, towardsBuckets, preFifthDrop, fifthDrop, towardsSubSecondTrip, preSecondSubCollection, secondSubCollection, towardsBucketsSecondTrip, preSixthDrop, sixthDrop, towardsSubThirdTrip, preThirdSubCollection, thirdSubCollection, towardsBucketsThirdTrip, preSeventhDrop, seventhDrop;
+    Pose startPose, firstDrop, firstPickUp, secondDrop, secondPickUp, thirdDrop, thirdPickup, fourthDrop, towardsSub, preFirstSubCollection, firstSubCollection, towardsBuckets, preFifthDrop, fifthDrop, towardsSubSecondTrip, preSecondSubCollection, secondSubCollection, towardsBucketsSecondTrip, preSixthDrop, sixthDrop, towardsSubThirdTrip, preThirdSubCollection, thirdSubCollection, towardsBucketsThirdTrip, preSeventhDrop, seventhDrop, wiggle;
 
     public void buildPaths() {
         startPose= new Pose(7.3, 112, Math.toRadians(0));
@@ -96,15 +96,16 @@ public class Samples extends OpMode {
         fourthDrop = new Pose(7.8, 129, Math.toRadians(0));
 
         towardsSub = new Pose(63, 108, Math.toRadians(-90));
-        preFirstSubCollection = new Pose(63, 100, Math.toRadians(-90));
-        firstSubCollection = new Pose(63, 95, Math.toRadians(-90));
+        preFirstSubCollection = new Pose(63, 100, Math.toRadians(-85));
+        firstSubCollection = new Pose(63, 95, Math.toRadians(-85));
+        wiggle = new Pose(63, 95, Math.toRadians(-90));
         towardsBuckets = new Pose(63, 108, Math.toRadians(-90));
         preFifthDrop = new Pose(24, 124, Math.toRadians(0));
         fifthDrop = new Pose(7.3, 130, Math.toRadians(0));
 
         towardsSubSecondTrip = new Pose(66, 108, Math.toRadians(-90));
-        preSecondSubCollection = new Pose(66, 100, Math.toRadians(-90));
-        secondSubCollection = new Pose(66, 95, Math.toRadians(-90));
+        preSecondSubCollection = new Pose(66, 100, Math.toRadians(-85));
+        secondSubCollection = new Pose(66, 95, Math.toRadians(-85));
         towardsBucketsSecondTrip = new Pose(66, 108, Math.toRadians(-90));
         preSixthDrop = new Pose(24, 124, Math.toRadians(0));
         sixthDrop = new Pose(7.3, 130, Math.toRadians(0));
@@ -156,9 +157,11 @@ public class Samples extends OpMode {
         firstSubPickup = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(preFirstSubCollection), new Point(firstSubCollection)))
                 .setLinearHeadingInterpolation(preFirstSubCollection.getHeading(), firstSubCollection.getHeading())
+                .addPath(new BezierLine(new Point(firstSubCollection), new Point(wiggle)))
+                .setLinearHeadingInterpolation(firstSubCollection.getHeading(), wiggle.getHeading())
                 .build();
         goingToBuckets = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(firstSubCollection), new Point(towardsBuckets)))
+                .addPath(new BezierLine(new Point(wiggle), new Point(towardsBuckets)))
                 .setLinearHeadingInterpolation(firstSubCollection.getHeading(), towardsBuckets.getHeading())
                 .build();
         preFifthDropLoc = follower.pathBuilder()
@@ -180,10 +183,12 @@ public class Samples extends OpMode {
         secondSubPickup = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(preSecondSubCollection), new Point(secondSubCollection)))
                 .setLinearHeadingInterpolation(preSecondSubCollection.getHeading(), secondSubCollection.getHeading())
+                .addPath(new BezierLine(new Point(secondSubCollection), new Point(wiggle)))
+                .setLinearHeadingInterpolation(secondSubCollection.getHeading(), wiggle.getHeading())
                 .build();
         goingToBuckets2nd = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(secondSubCollection), new Point(towardsBucketsSecondTrip)))
-                .setLinearHeadingInterpolation(secondSubCollection.getHeading(), towardsBucketsSecondTrip.getHeading())
+                .addPath(new BezierLine(new Point(wiggle), new Point(towardsBucketsSecondTrip)))
+                .setLinearHeadingInterpolation(wiggle.getHeading(), towardsBucketsSecondTrip.getHeading())
                 .build();
         preSixthDropLoc = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(towardsBucketsSecondTrip), new Point(preSixthDrop)))
@@ -387,7 +392,7 @@ public class Samples extends OpMode {
             // CASE 8: Check goingToSub (from fourthDrop (7.3,130) to towardsSub (60,108)) – X increasing; cancel when X >= 59.
             // Then start preSub.
             case 8:
-                if (!follower.isBusy() || follower.getPose().getX() >= 57) {
+                if (!follower.isBusy() || follower.getPose().getX() >= 56.5) {
                     slowdown = 1;//1
                     follower.followPath(preSub, false);
                     setPathState(pathState + 1);
@@ -512,7 +517,7 @@ public class Samples extends OpMode {
                     intake.setInnerBlockOpen(true);
                     delayedRun(() -> horizontalSlides.setPosition(slideTarget +80), 100);
                     delayedRun(() -> intake.setAutoPos(), 450);
-                    delayedRun(() -> horizontalSlides.setPosition(slideTarget +120), 450);
+                    delayedRun(() -> horizontalSlides.setPosition(slideTarget +100), 450);
                     delayedRun(() -> intake.setRotation(INTAKE), 750);
                     delayedRun(() -> intake.setInnerBlockOpen(false), 850);
                     delayedRun(() -> horizontalSlides.setPosition(slideTarget), 650);
@@ -669,6 +674,10 @@ public class Samples extends OpMode {
         }
     }
 
+    private void wiggle(){
+
+    }
+
     private void delayedRun(Runnable action, long delayInMillis) {
         scheduler.schedule(action, delayInMillis, TimeUnit.MILLISECONDS);
     }
@@ -687,7 +696,7 @@ public class Samples extends OpMode {
         double currentTime = getRuntime();
 
         if (!goingHome) {
-            horizontalSlides.setPosition(horizontalSlides.getCurrentPosition() + 12);
+            horizontalSlides.setPosition(horizontalSlides.getCurrentPosition() + 10);
             if (detectedColor != TargetState.NONE && detectedColor != TargetState.MIXED && doubleDouble) {
                 if (doubleDoubleTarget) {
                     // TARGET PIECE: Stop intake immediately and start goHome sequence.
