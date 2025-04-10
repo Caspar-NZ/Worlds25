@@ -122,7 +122,7 @@ public class SixSpecs extends OpMode {
         pre5thDrop = new Pose(36.0, 73.5, Math.toRadians(0)); //66.0
         slow5thDrop = new Pose(41.6, 77.5, Math.toRadians(0)); //70.0
         pre6thDrop = new Pose(38.0, 78, Math.toRadians(0)); //75.0
-        slow6thDrop = new Pose(43.4, 82, Math.toRadians(0));//79.0 x43.4
+        slow6thDrop = new Pose(43.5, 82, Math.toRadians(0));//79.0 x43.4
         parkPose= new Pose(15.0, 35.0, Math.toRadians(0)); //was 10 40
 
 
@@ -729,7 +729,7 @@ public class SixSpecs extends OpMode {
 
             // CASE 27: Wait for sixthSpec (slow speed) to complete, then start the parking path.
             case 30:
-                if (follower.getPose().getX() >= 40.80){
+                if (follower.getPose().getX() >= 40.90){
                     verticalSlides.setPosition(verticalSlides.MIN_POSITION + 680);
                 }
                 if (!follower.isBusy() || getRuntime() > timeout + 0.9) {

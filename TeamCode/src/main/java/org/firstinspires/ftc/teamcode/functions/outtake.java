@@ -10,14 +10,14 @@ public class outtake {
     final private double rotateAtDelivery = 0.35; //0.32
 
     final private double clawOpen = 0.0;
-    final private double clawClosed = 0.22;
+    final private double clawClosed = 0.22;//0.22
     final private double specDropAtIntake = 1.0;
     final private double specDropAtAuto = 0.82; //was 0.88
     final private double specDropAtDelivery = 0.76;
     final private double specReleaseBlocking = 0.05;
     final private double specReleaseOpen = 0.32;
     final private double sampleOpen = 0.9;
-    final private double sampleClosed = 0.5;
+    final private double sampleClosed = 0.65;
     final private double sampleAtIntake = 0.45;
     final private double sampleAtDelivery = 0.1;
     final private double sampleOutOfWay = 0;
@@ -27,6 +27,8 @@ public class outtake {
     public boolean dumpingYellows = true;
     public boolean scoringSamples = false;
     public boolean scoringSpecs = true;
+    public double incrementSpec = 1.0;
+    public boolean slowlyRotating = false;
 
     public outtake(HardwareMap hardwareMap){
         clawRotate = hardwareMap.servo.get("clawRotate");
@@ -39,6 +41,15 @@ public class outtake {
     public void update(){
         clawRotate.setPosition(setHookPos);
         claw.setPosition(setClawPos);
+
+        if (slowlyRotating){
+            incrementSpec -= 0.01;
+            setBucketPos = incrementSpec;
+            if (incrementSpec <= 0.76){
+                slowlyRotating = false;
+            }
+        }
+
         specDrop.setPosition(setBucketPos);
         specRelease.setPosition(setReleasePos);
         sampleRelease.setPosition(setSamplePos);
@@ -92,6 +103,7 @@ public class outtake {
             setBucketPos = specDropAtIntake;
         } else {
             BucketPositionAtIntake = false;
+            slowlyRotating = false;
             setBucketPos = specDropAtDelivery;
         }
     }
@@ -103,6 +115,12 @@ public class outtake {
             specDropOpen = false;
             setReleasePos = specReleaseBlocking;
         }
+    }
+
+    public void specSlowRotate(){
+        incrementSpec = 1.0;
+        slowlyRotating = true;
+        BucketPositionAtIntake = false;
     }
     public void setSpecDropAtAuto(){
         setBucketPos = specDropAtAuto;

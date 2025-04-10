@@ -384,32 +384,32 @@ public class teleOp extends LinearOpMode {
             if (transferringYellow){
                 switch(yellowProcess){
                     case 0:
-                        if (yellowTransferTime + 0.2 < currentTime){
+                        if (yellowTransferTime + 0.5 < currentTime){
                             outtake.sampleAtIntakePos(true);
                             yellowProcess++;
                         }
                         break;
                     case 1:
-                        if (yellowTransferTime + 0.5 < currentTime){
+                        if (yellowTransferTime + 0.8 < currentTime){
                             horiSlidesTarget = 0.1;
                             yellowProcess++;
                         }
                         break;
                     case 2:
-                        if (yellowTransferTime + 1.0 < currentTime){
+                        if (yellowTransferTime + 1.3 < currentTime){
                             intake.setTimedIntake(-1, -1, 0.8);
                             outtake.sampleReleaseOpen(false);
                             yellowProcess++;
                         }
                         break;
                     case 3:
-                        if (yellowTransferTime + 1.35 < currentTime){
+                        if (yellowTransferTime + 1.65 < currentTime){
                             outtake.sampleAtIntakePos(false);
                             yellowProcess++;
                         }
                         break;
                     case 4:
-                        if (yellowTransferTime + 1.8 < currentTime){
+                        if (yellowTransferTime + 2.1 < currentTime){
                             outtake.specDropAtIntakePos(true);
                             yellowProcess++;
                             transferringYellow = false;
@@ -446,7 +446,6 @@ public class teleOp extends LinearOpMode {
                 }
                 if (currentHoriPos < 210 && !scoringSpecs) {
                     goingHome = false;
-                    readyToTransferYellow = true;
                 }
                 if (currentHoriPos < 25) {
                     if (scoringSpecs){
@@ -484,13 +483,16 @@ public class teleOp extends LinearOpMode {
 
             if ((currentGamepad2.a && !previousGamepad2.a) && !specimenInClaw) {
                 if (outtake.BucketPositionAtIntake){
-                    outtake.specDropAtIntakePos(false);
+                    //outtake.specDropAtIntakePos(false);
+                    outtake.specSlowRotate();
                 } else{
                     outtake.specDropAtIntakePos(true);
                     outtake.specDropOpen(false);
                     specRunTimeRunning = false;
                 }
             }
+
+
 
             if (currentGamepad2.b && !previousGamepad2.b) {
                 if (!outtake.BucketPositionAtIntake){
